@@ -18,6 +18,19 @@ public class XorTest {
         
         assertEquals(outputs.length, 2);
         
-        System.out.println(outputs);
+        System.out.println(outputs[0] + ", " + outputs[1]);
+    }
+    
+    @Test public void trainingSimple() {
+    	int numLayers[] = {2, 3, 2};
+        XorNetwork network = new XorNetwork(numLayers);
+        
+        double inputs[] = {1, 1};
+        
+        double outputs[] = network.goThroughNetwork(inputs);
+        
+        assertEquals(outputs.length, 2);
+        
+        System.out.println(outputs[0] + ", " + outputs[1]);
     }
 }

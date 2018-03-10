@@ -16,7 +16,7 @@ public class XorNetwork {
 		
 		public Node(int numWeights, boolean isInput){
 			
-			// If input node, no need to 
+			// If input node, no need to have bias or non-one weights
 			if(isInput){
 				weights = new Matrix(1, 1, 1);
 				bias = 0;
@@ -36,9 +36,13 @@ public class XorNetwork {
 			Matrix inputsVector = new Matrix(inputsTemp);
 			
 			Matrix output = inputsVector.times(weights);
-			//Matrix output = weights.arrayTimes(inputsVector);
 			
-			return output.get(0, 0) + bias;
+			return sigmoid(output.get(0, 0) + bias);
+		}
+		
+		private double sigmoid(double x){
+			double ex = Math.exp(x);
+			return ex / (ex + 1);
 		}
 	}
 	
