@@ -13,8 +13,11 @@ public class XorNetwork {
 		// Weights is a column vector
 		private Matrix weights;
 		private double bias;
+		private boolean isInput;
 		
-		public Node(int numWeights, boolean isInput){
+		public Node(int numWeights, boolean _isInput){
+			
+			isInput = _isInput;
 			
 			// If input node, no need to have bias or non-one weights
 			if(isInput){
@@ -28,6 +31,9 @@ public class XorNetwork {
 		}
 		
 		public double takeInput(double inputs[]){
+			if(isInput) {
+				return inputs[0];
+			}
 			
 			// The inputs become a row vector
 			double inputsTemp[][] = new double[1][];
