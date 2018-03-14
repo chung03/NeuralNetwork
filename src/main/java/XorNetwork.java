@@ -47,8 +47,14 @@ public class XorNetwork {
 		}
 		
 		private double sigmoid(double x){
-			double ex = Math.exp(x);
-			return ex / (ex + 1);
+			double ex = Math.exp(-x);
+			return 1 / (1 + ex);
+		}
+		
+		// First derivative of the sigmoid function
+		private double sigmoidPrime(double x){
+			double ex = Math.exp(-x);
+			return ex / (1 + 2*ex + ex*ex);
 		}
 	}
 	
@@ -78,7 +84,7 @@ public class XorNetwork {
     }
 	
 	// Get inputs to the network, return outputs of the network
-	public double[] goThroughNetwork(double inputs[])
+	public double[] goThroughNetwork(double inputs[], boolean trainingMode)
 	{
 		double outputs[] = null;
 		double layerInputs[] = arrayCopy(inputs);
@@ -108,6 +114,25 @@ public class XorNetwork {
 		}
 		
 		return outputs;
+	}
+	
+	// Calculate magnitude of the difference between two vectors
+	private double magOfDifference(double vector1[], double vector2[]){
+		
+		double differenceVector[] = new double[vector1.length];
+		
+		// Get the difference vector
+		for(int i = 0; i < vector1.length; ++i){
+			differenceVector[i] = vector2[i] - vector1[i];
+		}
+		
+		// Get the magnitude now
+		double squareMagnitude = 0;
+		for(int i = 0; i < vector1.length; ++i){
+			squareMagnitude += differenceVector[i];
+		}
+		
+		return Math.sqrt(squareMagnitude);
 	}
 	
 	//Convenience function
