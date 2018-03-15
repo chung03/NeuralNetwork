@@ -129,10 +129,35 @@ public class XorNetwork {
 		// Get the magnitude now
 		double squareMagnitude = 0;
 		for(int i = 0; i < vector1.length; ++i){
-			squareMagnitude += differenceVector[i];
+			squareMagnitude += differenceVector[i] * differenceVector[i];
 		}
 		
 		return Math.sqrt(squareMagnitude);
+	}
+	
+	private double costFunc(double idealOutputs[], double actualOutputs[]){
+		
+		double finalResult = 0;
+		
+		for(int i = 0; i < idealOutputs.length; ++i){
+			double diff = idealOutputs[i] - actualOutputs[i];
+			finalResult +=  diff * diff;
+		}
+		
+		return finalResult/2;
+	}
+	
+	// Calculate gradient of cost with respect to output layer
+	private double[] gradientCostFunc(double idealOutputs[], double actualOutputs[]){
+		
+		double gradientVector[] = new double[idealOutputs.length];
+		
+		// Get the difference vector
+		for(int i = 0; i < idealOutputs.length; ++i){
+			gradientVector[i] = actualOutputs[i] - idealOutputs[i];
+		}
+		
+		return gradientVector;
 	}
 	
 	//Convenience function
