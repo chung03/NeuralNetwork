@@ -103,14 +103,18 @@ public class XorNetwork {
 	public double[] goThroughNetwork(double inputs[], boolean trainingMode, double idealOutputs[])
 	{
 		double outputs[][] = null;
-		
 		outputs = new double[layersNodesWeightsBias.length][];
+		
+		// Get the outputs of the first derivative of the Sigmoid functions
+		double outputsPrime[][] = null;
+		outputsPrime = new double[layersNodesWeightsBias.length][];
 		
 		//For each layer, multiply inputs by the weights + bias, then send outputs to next layer
 		for(int layerNum = 0; layerNum < layersNodesWeightsBias.length; ++layerNum){
 			Node[] layer = layersNodesWeightsBias[layerNum];
 			
 			outputs[layerNum] = new double[layer.length];
+			outputsPrime[layerNum] = new double[layer.length];
 			
 			// For each node, multiple inputs by weights then add bias
 			for(int nodeNum = 0; nodeNum < layer.length; ++nodeNum){
@@ -123,6 +127,7 @@ public class XorNetwork {
 					outputs[layerNum][nodeNum] = layer[nodeNum].takeInput(singleInput);
 				} else {
 					outputs[layerNum][nodeNum] = layer[nodeNum].takeInput(outputs[layerNum - 1]);
+					outputsPrime[layerNum][nodeNum] = layer[nodeNum].takeInputPrime(outputs[layerNum - 1]);
 				}
 			}
 		}
@@ -132,15 +137,17 @@ public class XorNetwork {
 		if(trainingMode){
 			// Calculate error vector of the output layer
 			double[] temp = gradientCostFunc(idealOutputs, outputs[outputLayerIndex]);
-			double[][] gradientVector = new double[0][];
+			double[][] gradientVector = new double[1][];
 			gradientVector[0] = temp;
 			Matrix gradientVectorMaxtrix = new Matrix(gradientVector);
 			
-			double[][] outputVector = new double[0][];
-			outputVector[0] = outputs[outputLayerIndex];
+			double[][] outputVector = new double[1][];
+			outputVector[0] = outputsPrime[outputLayerIndex];
 			Matrix outputVectorMatrix = new Matrix(outputVector);
 			
 			Matrix outputLayerError = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix);
+			
+			//Backpropogate the error
 		}
 		
 		return outputs[outputLayerIndex];

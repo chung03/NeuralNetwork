@@ -14,7 +14,7 @@ public class XorTest {
         
         double inputs[] = {1, 1};
         
-        double outputs[] = network.goThroughNetwork(inputs, false);
+        double outputs[] = network.goThroughNetwork(inputs, false, null);
         
         assertEquals(outputs.length, 2);
         
@@ -26,8 +26,9 @@ public class XorTest {
         XorNetwork network = new XorNetwork(numLayers);
         
         double inputs[] = {1, 1};
+        double idealOutputs[] = {0,0};
         
-        double outputs[] = network.goThroughNetwork(inputs, false);
+        double outputs[] = network.goThroughNetwork(inputs, true, idealOutputs);
         
         assertEquals(outputs.length, 2);
         
