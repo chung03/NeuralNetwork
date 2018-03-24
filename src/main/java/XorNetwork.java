@@ -15,6 +15,10 @@ public class XorNetwork {
 		private double bias;
 		private boolean isInput;
 		
+		public double[][] getWeights(){
+			return weights.getArrayCopy();
+		}
+		
 		public Node(int numWeights, boolean _isInput){
 			
 			isInput = _isInput;
@@ -135,22 +139,57 @@ public class XorNetwork {
 		int outputLayerIndex = layersNodesWeightsBias.length - 1;
 		
 		if(trainingMode){
-			// Calculate error vector of the output layer
-			double[] temp = gradientCostFunc(idealOutputs, outputs[outputLayerIndex]);
-			double[][] gradientVector = new double[1][];
-			gradientVector[0] = temp;
-			Matrix gradientVectorMaxtrix = new Matrix(gradientVector);
-			
-			double[][] outputVector = new double[1][];
-			outputVector[0] = outputsPrime[outputLayerIndex];
-			Matrix outputVectorMatrix = new Matrix(outputVector);
-			
-			Matrix outputLayerError = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix);
-			
-			//Backpropogate the error
+			doTraining(outputs, idealOutputs, outputsPrime, layersNodesWeightsBias);
 		}
 		
 		return outputs[outputLayerIndex];
+	}
+	
+	private void doTraining(double[][] outputs, double[] idealOutputs, double[][] outputsPrime, Node[][] layersNodesWeightsBias){
+		
+		int outputLayerIndex = layersNodesWeightsBias.length - 1;
+		
+		Matrix[] layerErrors = new Matrix[layersNodesWeightsBias.length - 1];
+		
+		// Calculate error vector of the output layer
+		double[] temp = gradientCostFunc(idealOutputs, outputs[outputLayerIndex]);
+		double[][] gradientVector = new double[1][];
+		gradientVector[0] = temp;
+		Matrix gradientVectorMaxtrix = new Matrix(gradientVector);
+		
+		double[][] outputVector = new double[1][];
+		outputVector[0] = outputsPrime[outputLayerIndex];
+		Matrix outputVectorMatrix = new Matrix(outputVector);
+		
+		layerErrors[outputLayerIndex - 1] = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix);
+		
+		//Backpropogate the error
+		for(int i = outputLayerIndex - 2; i > 0; --i){
+			
+			// Get the weights matrix, do w * err
+			Matrix weightsMatrix = constructWeightsMatrix(layersNodesWeightsBias[i]);
+			Matrix applied = weightsMatrix.transpose().arrayTimes(layerErrors[i + 1]);
+			
+			// Just get the outputs of the sigmoid primes from during the training
+			double[][] layerOutputVector = new double[1][];
+			layerOutputVector[0] = outputsPrime[i];
+			Matrix layerOutputVectorMatrix = new Matrix(layerOutputVector);
+			
+			// Finally get the error for the layer
+			layerErrors[i] = applied.arrayTimes(layerOutputVectorMatrix);
+		}
+	}
+	
+	private Matrix constructWeightsMatrix(Node layer[]){
+		double[][] weights = new double[layer.length][];
+		
+		for(int i = 0; i < layer.length; ++i) {
+			weights[i] = layer[i].getWeights()[0];
+		}
+		
+		Matrix ret = new Matrix(weights);
+		
+		return ret;
 	}
 	
 	// Calculate magnitude of the difference between two vectors
