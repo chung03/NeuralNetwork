@@ -46,6 +46,22 @@ public class XorNetwork {
 			return sigmoid(output.get(0, 0) + bias);
 		}
 		
+		public double takeInputPrime(double inputs[]){
+			if(isInput) {
+				return inputs[0];
+			}
+			
+			// The inputs become a row vector
+			double inputsTemp[][] = new double[1][];
+			inputsTemp[0] = inputs;
+			
+			Matrix inputsVector = new Matrix(inputsTemp);
+			
+			Matrix output = inputsVector.times(weights);
+			
+			return sigmoidPrime(output.get(0, 0) + bias);
+		}
+		
 		private double sigmoid(double x){
 			double ex = Math.exp(-x);
 			return 1 / (1 + ex);
@@ -84,16 +100,17 @@ public class XorNetwork {
     }
 	
 	// Get inputs to the network, return outputs of the network
-	public double[] goThroughNetwork(double inputs[], boolean trainingMode)
+	public double[] goThroughNetwork(double inputs[], boolean trainingMode, double idealOutputs[])
 	{
-		double outputs[] = null;
-		double layerInputs[] = arrayCopy(inputs);
+		double outputs[][] = null;
+		
+		outputs = new double[layersNodesWeightsBias.length][];
 		
 		//For each layer, multiply inputs by the weights + bias, then send outputs to next layer
 		for(int layerNum = 0; layerNum < layersNodesWeightsBias.length; ++layerNum){
 			Node[] layer = layersNodesWeightsBias[layerNum];
 			
-			outputs = new double[layer.length];
+			outputs[layerNum] = new double[layer.length];
 			
 			// For each node, multiple inputs by weights then add bias
 			for(int nodeNum = 0; nodeNum < layer.length; ++nodeNum){
@@ -101,19 +118,32 @@ public class XorNetwork {
 				// If this is the input node, then match each input with a node
 				if(layerNum == 0){
 					double singleInput[] = new double[1];
-					singleInput[0] = layerInputs[nodeNum];
+					singleInput[0] = inputs[nodeNum];
 					
-					outputs[nodeNum] = layer[nodeNum].takeInput(singleInput);
+					outputs[layerNum][nodeNum] = layer[nodeNum].takeInput(singleInput);
 				} else {
-					outputs[nodeNum] = layer[nodeNum].takeInput(layerInputs);
+					outputs[layerNum][nodeNum] = layer[nodeNum].takeInput(outputs[layerNum - 1]);
 				}
 			}
-			
-			// Convert the outputs into the inputs for the next layer
-			layerInputs = arrayCopy(outputs);
 		}
 		
-		return outputs;
+		int outputLayerIndex = layersNodesWeightsBias.length - 1;
+		
+		if(trainingMode){
+			// Calculate error vector of the output layer
+			double[] temp = gradientCostFunc(idealOutputs, outputs[outputLayerIndex]);
+			double[][] gradientVector = new double[0][];
+			gradientVector[0] = temp;
+			Matrix gradientVectorMaxtrix = new Matrix(gradientVector);
+			
+			double[][] outputVector = new double[0][];
+			outputVector[0] = outputs[outputLayerIndex];
+			Matrix outputVectorMatrix = new Matrix(outputVector);
+			
+			Matrix outputLayerError = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix);
+		}
+		
+		return outputs[outputLayerIndex];
 	}
 	
 	// Calculate magnitude of the difference between two vectors
