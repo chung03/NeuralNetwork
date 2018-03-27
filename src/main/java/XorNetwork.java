@@ -38,7 +38,9 @@ public class XorNetwork {
 				weights = new Matrix(1, 1, 1);
 				bias = 0;
 			} else {
+				// Set weights between -0.5 and 0.5
 				weights = Matrix.random(numWeights, 1);
+				weights.minusEquals(new Matrix(numWeights, 1, 0.5));
 				
 				bias = 0;
 			}

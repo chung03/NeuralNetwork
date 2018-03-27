@@ -24,14 +24,14 @@ public class XorTest {
     }
     
     @Test public void trainingSimple() {
-    	int numLayers[] = {2, 3, 4, 3, 1};
+    	int numLayers[] = {2, 2, 1};
         XorNetwork network = new XorNetwork(numLayers);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 5000; ++i){
-        	for(int k = 0; k < 2; ++k){
+        for(int i = 0; i < 100000; ++i){
+        	for(int k = 0; k < 4; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
     	        assertEquals(outputs.length, 1);
@@ -50,8 +50,8 @@ public class XorTest {
 	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
     	}
         
-        for(int i = 0; i < 5000; ++i){
-        	for(int k = 2; k < 4; ++k){
+        for(int i = 0; i < 100000; ++i){
+        	for(int k = 0; k < 4; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
     	        assertEquals(outputs.length, 1);
