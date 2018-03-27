@@ -9,6 +9,8 @@ import Jama.Matrix;
 
 public class XorNetwork {
 	
+	private static final double LEARNING_RATE = 0.2;
+	
 	private class Node{
 		// Weights is a column vector
 		private Matrix weights;
@@ -16,7 +18,15 @@ public class XorNetwork {
 		private boolean isInput;
 		
 		public double[][] getWeights(){
-			return weights.getArrayCopy();
+			return weights.transpose().getArrayCopy();
+		}
+		
+		public void adjustWeights(Matrix weightAdjustment){	
+			weights.arrayTimesEquals(weightAdjustment.times(LEARNING_RATE));
+		}
+		
+		public void adjustBias(double deltaBias){
+			bias += LEARNING_RATE * deltaBias;
 		}
 		
 		public Node(int numWeights, boolean _isInput){
@@ -149,7 +159,7 @@ public class XorNetwork {
 		
 		int outputLayerIndex = layersNodesWeightsBias.length - 1;
 		
-		Matrix[] layerErrors = new Matrix[layersNodesWeightsBias.length - 1];
+		Matrix[] layerErrors = new Matrix[layersNodesWeightsBias.length];
 		
 		// Calculate error vector of the output layer
 		double[] temp = gradientCostFunc(idealOutputs, outputs[outputLayerIndex]);
@@ -161,22 +171,44 @@ public class XorNetwork {
 		outputVector[0] = outputsPrime[outputLayerIndex];
 		Matrix outputVectorMatrix = new Matrix(outputVector);
 		
-		layerErrors[outputLayerIndex - 1] = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix);
+		layerErrors[outputLayerIndex] = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix);
 		
 		//Backpropogate the error
-		for(int i = outputLayerIndex - 2; i > 0; --i){
+		for(int i = outputLayerIndex - 1; i > 0; --i){
 			
 			// Get the weights matrix, do w * err
-			Matrix weightsMatrix = constructWeightsMatrix(layersNodesWeightsBias[i]);
-			Matrix applied = weightsMatrix.transpose().arrayTimes(layerErrors[i + 1]);
+			Matrix weightsMatrix = constructWeightsMatrix(layersNodesWeightsBias[i + 1]);
+			Matrix applied = weightsMatrix.transpose().times(layerErrors[i + 1]);
 			
 			// Just get the outputs of the sigmoid primes from during the training
 			double[][] layerOutputVector = new double[1][];
 			layerOutputVector[0] = outputsPrime[i];
-			Matrix layerOutputVectorMatrix = new Matrix(layerOutputVector);
+			Matrix layerOutputVectorMatrix = new Matrix(layerOutputVector).transpose();
 			
 			// Finally get the error for the layer
 			layerErrors[i] = applied.arrayTimes(layerOutputVectorMatrix);
+		}
+		
+		// Now use the error terms and the outputs to determine the how weights and bias should be changed
+		for(int i = outputLayerIndex; i > 0; --i){
+			
+			Matrix layerError = layerErrors[i];
+			
+			// Iterate over the nodes in a given layer
+			for(int k = 0; k < layersNodesWeightsBias[i].length; ++k){
+				Node node = layersNodesWeightsBias[i][k];
+				
+				Matrix weightDeltas = new Matrix(outputs[i - 1].length, 1);
+				
+				// Iterate over the outputs of the previous layer
+				for(int j = 0; j < outputs[i - 1].length; ++j){
+					double weightDelta = outputs[i - 1][j] * layerError.get(k, 0);
+					weightDeltas.set(j, 0, weightDelta);
+				}
+				
+				node.adjustWeights(weightDeltas);
+				node.adjustBias(layerError.get(k, 0));
+			}
 		}
 	}
 	

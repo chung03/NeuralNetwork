@@ -17,21 +17,29 @@ public class XorTest {
         double outputs[] = network.goThroughNetwork(inputs, false, null);
         
         assertEquals(outputs.length, 2);
+        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+        assertTrue(outputs[1] >= 0 && outputs[1] <= 1);
         
         System.out.println(outputs[0] + ", " + outputs[1]);
     }
     
     @Test public void trainingSimple() {
-    	int numLayers[] = {2, 3, 2};
+    	int numLayers[] = {2, 3, 1};
         XorNetwork network = new XorNetwork(numLayers);
         
-        double inputs[] = {1, 1};
-        double idealOutputs[] = {0,0};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        double outputs[] = network.goThroughNetwork(inputs, true, idealOutputs);
+        for(int i = 0; i < 20; ++i){
         
-        assertEquals(outputs.length, 2);
-        
-        System.out.println(outputs[0] + ", " + outputs[1]);
+        	for(int k = 0; k < 4; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+    	        assertEquals(outputs.length, 1);
+    	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+    	        
+    	        System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
     }
 }
