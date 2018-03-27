@@ -9,7 +9,7 @@ import Jama.Matrix;
 
 public class XorNetwork {
 	
-	private static final double LEARNING_RATE = 0.2;
+	private static final double LEARNING_RATE = 0.1;
 	
 	private class Node{
 		// Weights is a column vector
@@ -21,8 +21,8 @@ public class XorNetwork {
 			return weights.transpose().getArrayCopy();
 		}
 		
-		public void adjustWeights(Matrix weightAdjustment){	
-			weights.arrayTimesEquals(weightAdjustment.times(LEARNING_RATE));
+		public void adjustWeights(Matrix weightAdjustment){
+			weights.plusEquals(weightAdjustment.times(LEARNING_RATE));
 		}
 		
 		public void adjustBias(double deltaBias){
@@ -40,7 +40,7 @@ public class XorNetwork {
 			} else {
 				weights = Matrix.random(numWeights, 1);
 				
-				bias = Math.random();
+				bias = 0;
 			}
 		}
 		
@@ -167,9 +167,12 @@ public class XorNetwork {
 		gradientVector[0] = temp;
 		Matrix gradientVectorMaxtrix = new Matrix(gradientVector);
 		
-		double[][] outputVector = new double[1][];
-		outputVector[0] = outputsPrime[outputLayerIndex];
-		Matrix outputVectorMatrix = new Matrix(outputVector);
+		// Printing the difference between the ideal outputs and the actual outputs
+		// gradientVectorMaxtrix.print( 2, 5);
+		
+		double[][] outputPrimeVector = new double[1][];
+		outputPrimeVector[0] = outputsPrime[outputLayerIndex];
+		Matrix outputVectorMatrix = new Matrix(outputPrimeVector);
 		
 		layerErrors[outputLayerIndex] = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix);
 		
@@ -262,7 +265,7 @@ public class XorNetwork {
 		
 		// Get the difference vector
 		for(int i = 0; i < idealOutputs.length; ++i){
-			gradientVector[i] = actualOutputs[i] - idealOutputs[i];
+			gradientVector[i] = - ( actualOutputs[i] - idealOutputs[i] );
 		}
 		
 		return gradientVector;
