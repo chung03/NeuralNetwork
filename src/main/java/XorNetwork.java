@@ -9,7 +9,7 @@ import Jama.Matrix;
 
 public class XorNetwork {
 	
-	private static final double LEARNING_RATE = 0.1;
+	private double learningRate = 0.1;
 	
 	private class Node{
 		// Weights is a column vector
@@ -22,11 +22,11 @@ public class XorNetwork {
 		}
 		
 		public void adjustWeights(Matrix weightAdjustment){
-			weights.plusEquals(weightAdjustment.times(LEARNING_RATE));
+			weights.plusEquals(weightAdjustment.times(learningRate));
 		}
 		
 		public void adjustBias(double deltaBias){
-			bias += LEARNING_RATE * deltaBias;
+			bias += learningRate * deltaBias;
 		}
 		
 		public Node(int numWeights, boolean _isInput){
@@ -92,7 +92,9 @@ public class XorNetwork {
 	
 	private Node[][] layersNodesWeightsBias;
 	
-	public XorNetwork(int numNodesInLayers[]) {
+	public XorNetwork(int numNodesInLayers[], double _learningRate) {
+		
+		learningRate = _learningRate;
 		
 		// Add correct number of layers
 		layersNodesWeightsBias = new Node[numNodesInLayers.length][];

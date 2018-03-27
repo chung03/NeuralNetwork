@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 public class XorTest {
     @Test public void sanityTest() {
     	int numLayers[] = {2, 3, 2};
-        XorNetwork network = new XorNetwork(numLayers);
+        XorNetwork network = new XorNetwork(numLayers, 1);
         
         double inputs[] = {1, 1};
         
@@ -24,13 +24,13 @@ public class XorTest {
     }
     
     @Test public void trainingSimple() {
-    	int numLayers[] = {2, 2, 1};
-        XorNetwork network = new XorNetwork(numLayers);
+    	int numLayers[] = {2, 10, 1};
+        XorNetwork network = new XorNetwork(numLayers, 4);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 100000; ++i){
+        for(int i = 0; i < 5000; ++i){
         	for(int k = 0; k < 4; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -50,7 +50,7 @@ public class XorTest {
 	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
     	}
         
-        for(int i = 0; i < 100000; ++i){
+        for(int i = 0; i < 5000; ++i){
         	for(int k = 0; k < 4; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
