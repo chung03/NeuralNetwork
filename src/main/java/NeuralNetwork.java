@@ -7,7 +7,7 @@
 
 import Jama.Matrix;
 
-public class XorNetwork {
+public class NeuralNetwork {
 	
 	private double learningRate = 0.1;
 	
@@ -92,7 +92,7 @@ public class XorNetwork {
 	
 	private Node[][] layersNodesWeightsBias;
 	
-	public XorNetwork(int numNodesInLayers[], double _learningRate) {
+	public NeuralNetwork(int numNodesInLayers[], double _learningRate) {
 		
 		learningRate = _learningRate;
 		
@@ -231,37 +231,6 @@ public class XorNetwork {
 		return ret;
 	}
 	
-	// Calculate magnitude of the difference between two vectors
-	private double magOfDifference(double vector1[], double vector2[]){
-		
-		double differenceVector[] = new double[vector1.length];
-		
-		// Get the difference vector
-		for(int i = 0; i < vector1.length; ++i){
-			differenceVector[i] = vector2[i] - vector1[i];
-		}
-		
-		// Get the magnitude now
-		double squareMagnitude = 0;
-		for(int i = 0; i < vector1.length; ++i){
-			squareMagnitude += differenceVector[i] * differenceVector[i];
-		}
-		
-		return Math.sqrt(squareMagnitude);
-	}
-	
-	private double costFunc(double idealOutputs[], double actualOutputs[]){
-		
-		double finalResult = 0;
-		
-		for(int i = 0; i < idealOutputs.length; ++i){
-			double diff = idealOutputs[i] - actualOutputs[i];
-			finalResult +=  diff * diff;
-		}
-		
-		return finalResult/2;
-	}
-	
 	// Calculate gradient of cost with respect to output layer
 	private double[] gradientCostFunc(double idealOutputs[], double actualOutputs[]){
 		
@@ -273,16 +242,5 @@ public class XorNetwork {
 		}
 		
 		return gradientVector;
-	}
-	
-	//Convenience function
-	private double[] arrayCopy(double orig[]){
-		double copy[] = new double[orig.length];
-		
-		for(int i = 0; i < orig.length; ++i){
-			copy[i] = orig[i];
-		}
-		
-		return copy;
 	}
 }
