@@ -1,4 +1,7 @@
 import org.junit.Test;
+
+import com.neural.NeuralNetwork;
+
 import static org.junit.Assert.*;
 
 /*
@@ -23,12 +26,25 @@ public class XorTest {
         System.out.println(outputs[0] + ", " + outputs[1]);
     }
     
-    @Test public void trainingSimple() {
+    @Test public void trainingSimpleXOR() {
+    	System.out.println("trainingSimpleXOR beginning");
+    	
     	int numLayers[] = {2, 10, 1};
         NeuralNetwork network = new NeuralNetwork(numLayers, 4);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
+        
+        for(int i = 0; i < 5000; ++i){
+        	for(int k = 0; k < 4; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+    	        assertEquals(outputs.length, 1);
+    	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+    	        
+    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
         
         for(int i = 0; i < 5000; ++i){
         	for(int k = 0; k < 4; ++k){
@@ -49,6 +65,27 @@ public class XorTest {
 	        
 	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
     	}
+    }
+    
+    @Test public void trainingSimpleNAND() {
+    	System.out.println("trainingSimpleNAND beginning");
+    	
+    	int numLayers[] = {2, 10, 1};
+        NeuralNetwork network = new NeuralNetwork(numLayers, 4);
+        
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        for(int i = 0; i < 5000; ++i){
+        	for(int k = 0; k < 4; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+    	        assertEquals(outputs.length, 1);
+    	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+    	        
+    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
         
         for(int i = 0; i < 5000; ++i){
         	for(int k = 0; k < 4; ++k){
