@@ -35,7 +35,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 10000; ++i){
+        for(int i = 0; i < 2500; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -67,7 +67,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        for(int i = 0; i < 10000; ++i){
+        for(int i = 0; i < 1000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
