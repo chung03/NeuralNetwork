@@ -35,8 +35,8 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 5000; ++i){
-        	for(int k = 0; k < 4; ++k){
+        for(int i = 0; i < 10000; ++i){
+        	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
     	        assertEquals(outputs.length, 1);
@@ -46,22 +46,12 @@ public class XorTest {
         	}
         }
         
-        for(int i = 0; i < 5000; ++i){
-        	for(int k = 0; k < 4; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < 4; ++k){
+        for(int k = 0; k < inputs.length; ++k){
     		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
 	        
 	        assertEquals(outputs.length, 1);
 	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
 	        
 	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
     	}
@@ -76,8 +66,8 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        for(int i = 0; i < 5000; ++i){
-        	for(int k = 0; k < 4; ++k){
+        for(int i = 0; i < 10000; ++i){
+        	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
     	        assertEquals(outputs.length, 1);
@@ -87,22 +77,54 @@ public class XorTest {
         	}
         }
         
-        for(int i = 0; i < 5000; ++i){
-        	for(int k = 0; k < 4; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < 4; ++k){
+        for(int k = 0; k < inputs.length; ++k){
     		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
 	        
 	        assertEquals(outputs.length, 1);
 	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
+	        
+	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
+    	}
+    }
+    
+    @Test public void trainingSanityLotsOfInputs() {
+    	System.out.println("trainingSanityLotsOfInputs beginning");
+    	
+    	int numLayers[] = {4096, 2048, 3};
+        NeuralNetwork network = new NeuralNetwork(numLayers, 1);
+        
+        double inputs[][] = new double[1][];
+        inputs[0] = new double[4096];
+        
+        for(int i = 0; i < 4096; ++i){
+        	inputs[0][i] = 1;
+        }
+        
+        double idealOutputs[][] = {{0, 0, 0}};
+        
+        for(int i = 0; i < 2; ++i){
+        	for(int k = 0; k < inputs.length; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+        		assertEquals(outputs.length, 3);
+    	        for(int j = 0; j < outputs.length; ++j){
+    	        	assertTrue(outputs[j] >= 0 && outputs[j] <= 1);
+    	        }
+    	        
+    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
+        
+        for(int k = 0; k < inputs.length; ++k){
+    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
+	        
+	        assertEquals(outputs.length, 3);
+	        for(int j = 0; j < outputs.length; ++j){
+	        	assertTrue(outputs[j] >= 0 && outputs[j] <= 1);
+	        }
+	        
+	        //assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
 	        
 	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
     	}

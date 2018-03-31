@@ -179,7 +179,7 @@ public class NeuralNetwork {
 		outputPrimeVector[0] = outputsPrime[outputLayerIndex];
 		Matrix outputVectorMatrix = new Matrix(outputPrimeVector);
 		
-		layerErrors[outputLayerIndex] = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix);
+		layerErrors[outputLayerIndex] = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix).transpose();
 		
 		//Backpropogate the error
 		for(int i = outputLayerIndex - 1; i > 0; --i){
