@@ -60,7 +60,8 @@ public class NeuralNetwork {
 			
 			Matrix output = inputsVector.times(weights);
 			
-			return sigmoid(output.get(0, 0) + bias);
+			//return sigmoid(output.get(0, 0) + bias);
+			return reLU(output.get(0, 0) + bias);
 		}
 		
 		public double takeInputPrime(double inputs[]){
@@ -76,7 +77,8 @@ public class NeuralNetwork {
 			
 			Matrix output = inputsVector.times(weights);
 			
-			return sigmoidPrime(output.get(0, 0) + bias);
+			//return sigmoidPrime(output.get(0, 0) + bias);
+			return reLUPrime(output.get(0, 0) + bias);
 		}
 		
 		private double sigmoid(double x){
@@ -88,6 +90,16 @@ public class NeuralNetwork {
 		private double sigmoidPrime(double x){
 			double ex = Math.exp(-x);
 			return ex / (1 + 2*ex + ex*ex);
+		}
+		
+		// Leaky version
+		private double reLU(double x){
+			return (x <= 0) ? 0.01 * x : x;
+		}
+		
+		// First derivative of the reLU function
+		private double reLUPrime(double x){
+			return (x <= 0) ? 0.01 : 1;
 		}
 	}
 	
