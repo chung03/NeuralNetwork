@@ -29,13 +29,13 @@ public class XorTest {
     @Test public void trainingSimpleXOR() {
     	System.out.println("trainingSimpleXOR beginning");
     	
-    	int numLayers[] = {2, 10, 1};
+    	int numLayers[] = {2, 2, 1};
         NeuralNetwork network = new NeuralNetwork(numLayers, 0.1);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 2500; ++i){
+        for(int i = 0; i < 10000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -61,7 +61,7 @@ public class XorTest {
     @Test public void trainingSimpleNAND() {
     	System.out.println("trainingSimpleNAND beginning");
     	
-    	int numLayers[] = {2, 10, 1};
+    	int numLayers[] = {2, 2, 1};
         NeuralNetwork network = new NeuralNetwork(numLayers, 0.1);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
