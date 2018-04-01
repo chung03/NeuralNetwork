@@ -10,8 +10,14 @@ import Jama.Matrix;
 
 public class NeuralNetwork {
 	
+	public enum ACTIVATION_FUNC {
+		SIGMOID,
+		RELU
+	};
+	
 	private double learningRate = 0.1;
 	private double momentumFactor = 0.1;
+	private ACTIVATION_FUNC activationFunc = ACTIVATION_FUNC.RELU;
 	
 	private class Node{
 		// Weights is a column vector
@@ -69,8 +75,11 @@ public class NeuralNetwork {
 			
 			Matrix output = inputsVector.times(weights);
 			
-			//return sigmoid(output.get(0, 0) + bias);
-			return reLU(output.get(0, 0) + bias);
+			if(activationFunc == ACTIVATION_FUNC.RELU){
+				return reLU(output.get(0, 0) + bias);
+			} else {
+				return sigmoid(output.get(0, 0) + bias);
+			}
 		}
 		
 		public double takeInputPrime(double inputs[]){
@@ -86,8 +95,11 @@ public class NeuralNetwork {
 			
 			Matrix output = inputsVector.times(weights);
 			
-			//return sigmoidPrime(output.get(0, 0) + bias);
-			return reLUPrime(output.get(0, 0) + bias);
+			if(activationFunc == ACTIVATION_FUNC.RELU){
+				return reLUPrime(output.get(0, 0) + bias);
+			} else {
+				return sigmoidPrime(output.get(0, 0) + bias);
+			}
 		}
 		
 		private double sigmoid(double x){
@@ -114,10 +126,11 @@ public class NeuralNetwork {
 	
 	private Node[][] layersNodesWeightsBias;
 	
-	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor) {
+	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC _activationFunc) {
 		
 		learningRate = _learningRate;
 		momentumFactor = _momentumFactor;
+		activationFunc = _activationFunc;
 		
 		// Add correct number of layers
 		layersNodesWeightsBias = new Node[numNodesInLayers.length][];
