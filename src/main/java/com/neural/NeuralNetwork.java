@@ -11,23 +11,31 @@ import Jama.Matrix;
 public class NeuralNetwork {
 	
 	private double learningRate = 0.1;
+	private double momentumFactor = 0.1;
 	
 	private class Node{
 		// Weights is a column vector
 		private Matrix weights;
+		private Matrix currentWeightMomentum;
+		
 		private double bias;
+		private double currentBiasMomentum;
 		private boolean isInput;
+		
+		
 		
 		public double[][] getWeights(){
 			return weights.transpose().getArrayCopy();
 		}
 		
 		public void adjustWeights(Matrix weightAdjustment){
-			weights.plusEquals(weightAdjustment.times(learningRate));
+			currentWeightMomentum = currentWeightMomentum.times(momentumFactor).plus(weightAdjustment);
+			weights.plusEquals(currentWeightMomentum.times(learningRate));
 		}
 		
 		public void adjustBias(double deltaBias){
-			bias += learningRate * deltaBias;
+			currentBiasMomentum = currentBiasMomentum * momentumFactor + deltaBias;
+			bias += learningRate * currentBiasMomentum;
 		}
 		
 		public Node(int numWeights, boolean _isInput){
@@ -44,6 +52,7 @@ public class NeuralNetwork {
 				weights.minusEquals(new Matrix(numWeights, 1, 0.5));
 				
 				bias = 0;
+				currentWeightMomentum = new Matrix(numWeights, 1, 0);
 			}
 		}
 		
@@ -105,9 +114,10 @@ public class NeuralNetwork {
 	
 	private Node[][] layersNodesWeightsBias;
 	
-	public NeuralNetwork(int numNodesInLayers[], double _learningRate) {
+	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor) {
 		
 		learningRate = _learningRate;
+		momentumFactor = _momentumFactor;
 		
 		// Add correct number of layers
 		layersNodesWeightsBias = new Node[numNodesInLayers.length][];

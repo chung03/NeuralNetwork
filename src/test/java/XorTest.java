@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 public class XorTest {
     @Test public void sanityTest() {
     	int numLayers[] = {2, 3, 2};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 1);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 1, 0.1);
         
         double inputs[] = {1, 1};
         
@@ -30,12 +30,12 @@ public class XorTest {
     	System.out.println("trainingSimpleXOR beginning");
     	
     	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 10000; ++i){
+        for(int i = 0; i < 7500; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -62,7 +62,7 @@ public class XorTest {
     	System.out.println("trainingSimpleNAND beginning");
     	
     	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.1);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
@@ -96,7 +96,7 @@ public class XorTest {
     	System.out.println("trainingSanityLotsOfInputs beginning");
     	
     	int numLayers[] = {4096, 2048, 3};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 1);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 1, 1);
         
         double inputs[][] = new double[1][];
         inputs[0] = new double[4096];
