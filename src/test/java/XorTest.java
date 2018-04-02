@@ -35,7 +35,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 10000; ++i){
+        for(int i = 0; i < 50000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -94,12 +94,12 @@ public class XorTest {
     	System.out.println("trainingSimpleNANDReLU beginning");
     	
     	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.1, NeuralNetwork.ACTIVATION_FUNC.RELU);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.RELU);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        for(int i = 0; i < 10000; ++i){
+        for(int i = 0; i < 20000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -115,6 +115,45 @@ public class XorTest {
 	        
 	        assertEquals(outputs.length, 1);
 	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+	        
+	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
+	        
+	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
+	        
+	        
+    	}
+    }
+    
+    @Test public void trainingSimpleNANDReLUSigmoidMix() {
+    	System.out.println("trainingSimpleNANDReLUSigmoidMix beginning");
+    	
+    	int numLayers[] = {2, 2, 1};
+    	NeuralNetwork.ACTIVATION_FUNC activationFuncs[] = {
+    			NeuralNetwork.ACTIVATION_FUNC.NONE,
+    			NeuralNetwork.ACTIVATION_FUNC.RELU,
+    			NeuralNetwork.ACTIVATION_FUNC.SIGMOID
+    			};
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, activationFuncs);
+        
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        for(int i = 0; i < 20000; ++i){
+        	for(int k = 0; k < inputs.length; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+    	        assertEquals(outputs.length, 1);
+    	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+    	        
+    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
+        
+        for(int k = 0; k < inputs.length; ++k){
+    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
+	        
+	        assertEquals(outputs.length, 1);
+	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
 	        
 	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
 	        

@@ -12,12 +12,13 @@ public class NeuralNetwork {
 	
 	public enum ACTIVATION_FUNC {
 		SIGMOID,
-		RELU
+		RELU,
+		NONE
 	};
 	
 	private double learningRate = 0.1;
 	private double momentumFactor = 0.1;
-	private ACTIVATION_FUNC activationFunc = ACTIVATION_FUNC.RELU;
+	//private ACTIVATION_FUNC activationFunc = ACTIVATION_FUNC.RELU;
 	
 	private class Node{
 		// Weights is a column vector
@@ -28,7 +29,7 @@ public class NeuralNetwork {
 		private double currentBiasMomentum;
 		private boolean isInput;
 		
-		
+		ACTIVATION_FUNC activationFunc;
 		
 		public double[][] getWeights(){
 			return weights.transpose().getArrayCopy();
@@ -44,9 +45,10 @@ public class NeuralNetwork {
 			bias += learningRate * currentBiasMomentum;
 		}
 		
-		public Node(int numWeights, boolean _isInput){
+		public Node(int numWeights, boolean _isInput, ACTIVATION_FUNC _activationFunc){
 			
 			isInput = _isInput;
+			activationFunc = _activationFunc;
 			
 			// If input node, no need to have bias or non-one weights
 			if(isInput){
@@ -126,13 +128,25 @@ public class NeuralNetwork {
 	
 	private Node[][] layersNodesWeightsBias;
 	
+	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC activationFuncs[]) {
+		Init(numNodesInLayers, activationFuncs, _learningRate, _momentumFactor);
+    }
+	
 	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC _activationFunc) {
+		ACTIVATION_FUNC activationFuncs[] = new ACTIVATION_FUNC[numNodesInLayers.length];
 		
+		for(int i = 0; i < activationFuncs.length; ++i)
+		{
+			activationFuncs[i] = _activationFunc;
+		}
+		
+		Init(numNodesInLayers, activationFuncs, _learningRate, _momentumFactor);
+	}
+	
+	private void Init(int numNodesInLayers[], ACTIVATION_FUNC actFuncs[], double _learningRate, double _momentumFactor) {
 		learningRate = _learningRate;
 		momentumFactor = _momentumFactor;
-		activationFunc = _activationFunc;
 		
-		// Add correct number of layers
 		layersNodesWeightsBias = new Node[numNodesInLayers.length][];
 		
 		// Add correct number of nodes, and then add weights and bias
@@ -145,13 +159,13 @@ public class NeuralNetwork {
 			for(int k = 0; k < numNodesInLayers[i]; ++k)
 			{
 				if(i == 0){
-					layersNodesWeightsBias[i][k] = new Node(1, true);
+					layersNodesWeightsBias[i][k] = new Node(1, true, actFuncs[i]);
 				} else {
-					layersNodesWeightsBias[i][k] = new Node(numNodesInLayers[i - 1], false);
+					layersNodesWeightsBias[i][k] = new Node(numNodesInLayers[i - 1], false, actFuncs[i]);
 				}
 			}
 		}
-    }
+	}
 	
 	// Get inputs to the network, return outputs of the network
 	public double[] goThroughNetwork(double inputs[], boolean trainingMode, double idealOutputs[])
