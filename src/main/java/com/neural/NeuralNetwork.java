@@ -13,6 +13,7 @@ public class NeuralNetwork {
 	public enum ACTIVATION_FUNC {
 		SIGMOID,
 		RELU,
+		TANH,
 		NONE
 	};
 	
@@ -79,6 +80,8 @@ public class NeuralNetwork {
 			
 			if(activationFunc == ACTIVATION_FUNC.RELU){
 				return reLU(output.get(0, 0) + bias);
+			} else if(activationFunc == ACTIVATION_FUNC.TANH){
+					return tanh(output.get(0, 0) + bias);
 			} else {
 				return sigmoid(output.get(0, 0) + bias);
 			}
@@ -99,6 +102,8 @@ public class NeuralNetwork {
 			
 			if(activationFunc == ACTIVATION_FUNC.RELU){
 				return reLUPrime(output.get(0, 0) + bias);
+			} else if(activationFunc == ACTIVATION_FUNC.TANH){
+				return tanhPrime(output.get(0, 0) + bias);
 			} else {
 				return sigmoidPrime(output.get(0, 0) + bias);
 			}
@@ -113,6 +118,16 @@ public class NeuralNetwork {
 		private double sigmoidPrime(double x){
 			double ex = Math.exp(-x);
 			return ex / (1 + 2*ex + ex*ex);
+		}
+		
+		private double tanh(double x){
+			return Math.tanh(x);
+		}
+		
+		// First derivative of the tanh function
+		private double tanhPrime(double x){
+			double tanh = Math.tanh(x);
+			return 1 - tanh*tanh;
 		}
 		
 		// Leaky version
@@ -216,7 +231,7 @@ public class NeuralNetwork {
 		Matrix[] layerErrors = new Matrix[layersNodesWeightsBias.length];
 		
 		// Calculate error vector of the output layer
-		double[] temp = gradientCostFunc(idealOutputs, outputs[outputLayerIndex]);
+		double[] temp = gradientCostFuncMeanSquared(idealOutputs, outputs[outputLayerIndex]);
 		double[][] gradientVector = new double[1][];
 		gradientVector[0] = temp;
 		Matrix gradientVectorMaxtrix = new Matrix(gradientVector);
@@ -282,12 +297,27 @@ public class NeuralNetwork {
 	}
 	
 	// Calculate gradient of cost with respect to output layer
-	private double[] gradientCostFunc(double idealOutputs[], double actualOutputs[]){
+	private double[] gradientCostFuncMeanSquared(double idealOutputs[], double actualOutputs[]){
 		
 		double gradientVector[] = new double[idealOutputs.length];
 		
 		// Get the difference vector
 		for(int i = 0; i < idealOutputs.length; ++i){
+			// Quadratic Cost Function
+			gradientVector[i] = - ( actualOutputs[i] - idealOutputs[i] );
+		}
+		
+		return gradientVector;
+	}
+	
+	// Calculate gradient of cost with respect to output layer
+	private double[] gradientCostFuncCrossEntropy(double idealOutputs[], double actualOutputs[]){
+		
+		double gradientVector[] = new double[idealOutputs.length];
+		
+		// Get the difference vector
+		for(int i = 0; i < idealOutputs.length; ++i){
+			// Cross Entropy Cost Function
 			gradientVector[i] = - ( actualOutputs[i] - idealOutputs[i] );
 		}
 		
