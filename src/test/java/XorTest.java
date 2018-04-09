@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 public class XorTest {
     @Test public void sanityTest() {
     	int numLayers[] = {2, 3, 2};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 1, 0.1, NeuralNetwork.ACTIVATION_FUNC.RELU);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 1, 0.1, NeuralNetwork.ACTIVATION_FUNC.RELU, null);
         
         double inputs[] = {1, 1};
         
@@ -30,7 +30,7 @@ public class XorTest {
     	System.out.println("trainingSimpleXORReLU beginning");
     	
     	int numLayers[] = {2, 3, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.RELU);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.RELU, null);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
@@ -62,7 +62,7 @@ public class XorTest {
     	System.out.println("trainingSimpleXORSigmoid beginning");
     	
     	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.SIGMOID);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.SIGMOID, null);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
@@ -94,12 +94,12 @@ public class XorTest {
     	System.out.println("trainingSimpleNANDReLU beginning");
     	
     	int numLayers[] = {2, 3, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.RELU);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.RELU, null);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        for(int i = 0; i < 20000; ++i){
+        for(int i = 0; i < 30000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -128,7 +128,7 @@ public class XorTest {
     	System.out.println("trainingSimpleXORTanh beginning");
     	
     	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.TANH);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.TANH, null);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
@@ -160,7 +160,7 @@ public class XorTest {
     	System.out.println("trainingSimpleNANDTanh beginning");
     	
     	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.TANH);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.TANH, null);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
@@ -190,6 +190,106 @@ public class XorTest {
     	}
     }
     
+    @Test public void trainingSimpleNANDTanhXavier() {
+    	System.out.println("trainingSimpleNANDTanhXavier beginning");
+    	
+    	int numLayers[] = {2, 2, 1};
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED);
+        
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        for(int i = 0; i < 5000; ++i){
+        	for(int k = 0; k < inputs.length; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+    	        assertEquals(outputs.length, 1);
+    	        assertTrue(outputs[0] >= -1 && outputs[0] <= 1);
+    	        
+    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
+        
+        for(int k = 0; k < inputs.length; ++k){
+    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
+	        
+	        assertEquals(outputs.length, 1);
+	        assertTrue(outputs[0] >= -1 && outputs[0] <= 1);
+	        
+	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
+	        
+	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
+	        
+	        
+    	}
+    }
+    
+    @Test public void trainingSimpleNANDReLUXavier() {
+    	System.out.println("trainingSimpleNANDReLUXavier beginning");
+    	
+    	int numLayers[] = {2, 3, 1};
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED);
+        
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        for(int i = 0; i < 4000; ++i){
+        	for(int k = 0; k < inputs.length; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+    	        assertEquals(outputs.length, 1);
+    	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+    	        
+    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
+        
+        for(int k = 0; k < inputs.length; ++k){
+    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
+	        
+	        assertEquals(outputs.length, 1);
+	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+	        
+	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
+	        
+	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
+	        
+	        
+    	}
+    }
+    
+    @Test public void trainingSimpleXORReLUXavier() {
+    	System.out.println("trainingSimpleXORReLUXavier beginning");
+    	
+    	int numLayers[] = {2, 3, 1};
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED);
+        
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
+        
+        for(int i = 0; i < 4000; ++i){
+        	for(int k = 0; k < inputs.length; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+    	        assertEquals(outputs.length, 1);
+    	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+    	        
+    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
+        
+        for(int k = 0; k < inputs.length; ++k){
+    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
+	        
+	        assertEquals(outputs.length, 1);
+	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+	        
+	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
+	        
+	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
+    	}
+    }
+    
     @Test public void trainingSimpleNANDReLUSigmoidMix() {
     	System.out.println("trainingSimpleNANDReLUSigmoidMix beginning");
     	
@@ -199,7 +299,7 @@ public class XorTest {
     			NeuralNetwork.ACTIVATION_FUNC.RELU,
     			NeuralNetwork.ACTIVATION_FUNC.SIGMOID
     			};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, activationFuncs);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, activationFuncs, null);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
@@ -233,7 +333,7 @@ public class XorTest {
     	System.out.println("trainingSanityLotsOfInputs beginning");
     	
     	int numLayers[] = {4096, 2048, 3};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 1, 1, NeuralNetwork.ACTIVATION_FUNC.RELU);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 1, 1, NeuralNetwork.ACTIVATION_FUNC.RELU, null);
         
         double inputs[][] = new double[1][];
         inputs[0] = new double[4096];

@@ -17,8 +17,14 @@ public class NeuralNetwork {
 		NONE
 	};
 	
+	public enum WEIGHT_INIT_FUNC {
+		RANDOM,
+		XAVIER_MODIFIED
+	};
+	
 	private double learningRate = 0.1;
 	private double momentumFactor = 0.1;
+	private WEIGHT_INIT_FUNC weightInitFunc = WEIGHT_INIT_FUNC.RANDOM;
 	//private ACTIVATION_FUNC activationFunc = ACTIVATION_FUNC.RELU;
 	
 	private class Node{
@@ -56,9 +62,32 @@ public class NeuralNetwork {
 				weights = new Matrix(1, 1, 1);
 				bias = 0;
 			} else {
-				// Set weights between -0.5 and 0.5
-				weights = Matrix.random(numWeights, 1);
-				weights.minusEquals(new Matrix(numWeights, 1, 0.5));
+				
+				if(weightInitFunc == WEIGHT_INIT_FUNC.XAVIER_MODIFIED){
+					// Set weights between -1/d and 1/d
+					weights = new Matrix(numWeights, 1);
+					
+					for(int i = 0; i < numWeights; ++i){
+						double num = Math.random();
+						
+						if(_activationFunc == ACTIVATION_FUNC.RELU){
+							// Get 0 to 2/d
+							num = num * 2/numWeights;
+						} else {
+							// Get -1/d to 1/d
+							num = ((num * 2) - 1)/numWeights;
+						}
+						
+						weights.set(i, 0, num);
+					}
+					
+					
+					weights.minusEquals(new Matrix(numWeights, 1, 0.5));
+				} else {
+					// Set weights between -0.5 and 0.5
+					weights = Matrix.random(numWeights, 1);
+					weights.minusEquals(new Matrix(numWeights, 1, 0.5));
+				}
 				
 				bias = 0;
 				currentWeightMomentum = new Matrix(numWeights, 1, 0);
@@ -143,11 +172,11 @@ public class NeuralNetwork {
 	
 	private Node[][] layersNodesWeightsBias;
 	
-	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC activationFuncs[]) {
-		Init(numNodesInLayers, activationFuncs, _learningRate, _momentumFactor);
+	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC activationFuncs[], WEIGHT_INIT_FUNC _weightInitFunc) {
+		Init(numNodesInLayers, activationFuncs, _learningRate, _momentumFactor, _weightInitFunc);
     }
 	
-	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC _activationFunc) {
+	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC _activationFunc, WEIGHT_INIT_FUNC _weightInitFunc) {
 		ACTIVATION_FUNC activationFuncs[] = new ACTIVATION_FUNC[numNodesInLayers.length];
 		
 		for(int i = 0; i < activationFuncs.length; ++i)
@@ -155,12 +184,16 @@ public class NeuralNetwork {
 			activationFuncs[i] = _activationFunc;
 		}
 		
-		Init(numNodesInLayers, activationFuncs, _learningRate, _momentumFactor);
+		Init(numNodesInLayers, activationFuncs, _learningRate, _momentumFactor, _weightInitFunc);
 	}
 	
-	private void Init(int numNodesInLayers[], ACTIVATION_FUNC actFuncs[], double _learningRate, double _momentumFactor) {
+	private void Init(int numNodesInLayers[], ACTIVATION_FUNC actFuncs[], double _learningRate, double _momentumFactor, WEIGHT_INIT_FUNC _weightInitFunc) {
 		learningRate = _learningRate;
 		momentumFactor = _momentumFactor;
+		
+		if(_weightInitFunc != null){
+			weightInitFunc = _weightInitFunc;
+		}
 		
 		layersNodesWeightsBias = new Node[numNodesInLayers.length][];
 		
