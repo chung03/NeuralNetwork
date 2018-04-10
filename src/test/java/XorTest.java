@@ -67,7 +67,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 10000; ++i){
+        for(int i = 0; i < 40000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -124,16 +124,16 @@ public class XorTest {
     	}
     }
     
-    @Test public void trainingSimpleXORTanh() {
-    	System.out.println("trainingSimpleXORTanh beginning");
+    @Test public void trainingSimpleXORTanhXavier() {
+    	System.out.println("trainingSimpleXORTanhXavier beginning");
     	
     	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.TANH, null);
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED);
         
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 10000; ++i){
+        for(int i = 0; i < 100000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -165,7 +165,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        for(int i = 0; i < 10000; ++i){
+        for(int i = 0; i < 40000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        

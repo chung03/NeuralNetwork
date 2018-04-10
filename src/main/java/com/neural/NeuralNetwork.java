@@ -22,9 +22,15 @@ public class NeuralNetwork {
 		XAVIER_MODIFIED
 	};
 	
+	public enum PROBLEM_TYPE {
+		REGRESSION,
+		CLASSIFICATION
+	};
+	
 	private double learningRate = 0.1;
 	private double momentumFactor = 0.1;
 	private WEIGHT_INIT_FUNC weightInitFunc = WEIGHT_INIT_FUNC.RANDOM;
+	private PROBLEM_TYPE problemType = PROBLEM_TYPE.REGRESSION;
 	//private ACTIVATION_FUNC activationFunc = ACTIVATION_FUNC.RELU;
 	
 	private class Node{
@@ -72,10 +78,10 @@ public class NeuralNetwork {
 						
 						if(_activationFunc == ACTIVATION_FUNC.RELU){
 							// Get 0 to 2/d
-							num = num * 2/numWeights;
+							num = num * 2/Math.sqrt(numWeights);
 						} else {
-							// Get -1/d to 1/d
-							num = ((num * 2) - 1)/numWeights;
+							// Get -2/d to 2/d
+							num = (((num * 2) - 1)/Math.sqrt(numWeights)) * 2;
 						}
 						
 						weights.set(i, 0, num);
@@ -218,8 +224,15 @@ public class NeuralNetwork {
 	// Get inputs to the network, return outputs of the network
 	public double[] goThroughNetwork(double inputs[], boolean trainingMode, double idealOutputs[])
 	{
+		int numOutputLayers = layersNodesWeightsBias.length;
+		
+		// Add a Softmax layer if this is a classification problem
+		if(problemType == PROBLEM_TYPE.CLASSIFICATION){
+			++numOutputLayers;
+		}
+		
 		double outputs[][] = null;
-		outputs = new double[layersNodesWeightsBias.length][];
+		outputs = new double[numOutputLayers][];
 		
 		// Get the outputs of the first derivative of the Sigmoid functions
 		double outputsPrime[][] = null;
@@ -249,6 +262,24 @@ public class NeuralNetwork {
 		}
 		
 		int outputLayerIndex = layersNodesWeightsBias.length - 1;
+		
+		// Calculate output of the Softmax layer if this is a classification problem
+		if(problemType == PROBLEM_TYPE.CLASSIFICATION){
+			
+			double outputLayerSum = 0;
+			
+			// Get sum of outputs from second last layer
+			for(int i = 0; i < outputs[outputLayerIndex].length; ++i){
+				outputLayerSum += outputs[outputLayerIndex][i];
+			}
+			
+			// Calculate output of softmax layer
+			for(int i = 0; i < outputs[outputLayerIndex].length; ++i){
+				outputs[outputLayerIndex + 1][i] = outputs[outputLayerIndex][i]/outputLayerSum;
+			}
+			
+			++outputLayerIndex;
+		}
 		
 		if(trainingMode){
 			doTraining(outputs, idealOutputs, outputsPrime, layersNodesWeightsBias);
