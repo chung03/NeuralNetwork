@@ -27,162 +27,23 @@ public class NeuralNetwork {
 		CLASSIFICATION
 	};
 	
-	private double learningRate = 0.1;
-	private double momentumFactor = 0.1;
-	private WEIGHT_INIT_FUNC weightInitFunc = WEIGHT_INIT_FUNC.RANDOM;
 	private PROBLEM_TYPE problemType = PROBLEM_TYPE.REGRESSION;
-	//private ACTIVATION_FUNC activationFunc = ACTIVATION_FUNC.RELU;
-	
-	private class Node{
-		// Weights is a column vector
-		private Matrix weights;
-		private Matrix currentWeightMomentum;
 		
-		private double bias;
-		private double currentBiasMomentum;
-		private boolean isInput;
-		
-		ACTIVATION_FUNC activationFunc;
-		
-		public double[][] getWeights(){
-			return weights.transpose().getArrayCopy();
-		}
-		
-		public void adjustWeights(Matrix weightAdjustment){
-			currentWeightMomentum = currentWeightMomentum.times(momentumFactor).plus(weightAdjustment);
-			weights.plusEquals(currentWeightMomentum.times(learningRate));
-		}
-		
-		public void adjustBias(double deltaBias){
-			currentBiasMomentum = currentBiasMomentum * momentumFactor + deltaBias;
-			bias += learningRate * currentBiasMomentum;
-		}
-		
-		public Node(int numWeights, boolean _isInput, ACTIVATION_FUNC _activationFunc){
-			
-			isInput = _isInput;
-			activationFunc = _activationFunc;
-			
-			// If input node, no need to have bias or non-one weights
-			if(isInput){
-				weights = new Matrix(1, 1, 1);
-				bias = 0;
-			} else {
-				
-				if(weightInitFunc == WEIGHT_INIT_FUNC.XAVIER_MODIFIED){
-					// Set weights between -1/d and 1/d
-					weights = new Matrix(numWeights, 1);
-					
-					for(int i = 0; i < numWeights; ++i){
-						double num = Math.random();
-						
-						if(_activationFunc == ACTIVATION_FUNC.RELU){
-							// Get 0 to 2/d
-							num = num * 2/Math.sqrt(numWeights);
-						} else {
-							// Get -2/d to 2/d
-							num = (((num * 2) - 1)/Math.sqrt(numWeights)) * 2;
-						}
-						
-						weights.set(i, 0, num);
-					}
-					
-					
-					weights.minusEquals(new Matrix(numWeights, 1, 0.5));
-				} else {
-					// Set weights between -0.5 and 0.5
-					weights = Matrix.random(numWeights, 1);
-					weights.minusEquals(new Matrix(numWeights, 1, 0.5));
-				}
-				
-				bias = 0;
-				currentWeightMomentum = new Matrix(numWeights, 1, 0);
-			}
-		}
-		
-		public double takeInput(double inputs[]){
-			if(isInput) {
-				return inputs[0];
-			}
-			
-			// The inputs become a row vector
-			double inputsTemp[][] = new double[1][];
-			inputsTemp[0] = inputs;
-			
-			Matrix inputsVector = new Matrix(inputsTemp);
-			
-			Matrix output = inputsVector.times(weights);
-			
-			if(activationFunc == ACTIVATION_FUNC.RELU){
-				return reLU(output.get(0, 0) + bias);
-			} else if(activationFunc == ACTIVATION_FUNC.TANH){
-					return tanh(output.get(0, 0) + bias);
-			} else {
-				return sigmoid(output.get(0, 0) + bias);
-			}
-		}
-		
-		public double takeInputPrime(double inputs[]){
-			if(isInput) {
-				return inputs[0];
-			}
-			
-			// The inputs become a row vector
-			double inputsTemp[][] = new double[1][];
-			inputsTemp[0] = inputs;
-			
-			Matrix inputsVector = new Matrix(inputsTemp);
-			
-			Matrix output = inputsVector.times(weights);
-			
-			if(activationFunc == ACTIVATION_FUNC.RELU){
-				return reLUPrime(output.get(0, 0) + bias);
-			} else if(activationFunc == ACTIVATION_FUNC.TANH){
-				return tanhPrime(output.get(0, 0) + bias);
-			} else {
-				return sigmoidPrime(output.get(0, 0) + bias);
-			}
-		}
-		
-		private double sigmoid(double x){
-			double ex = Math.exp(-x);
-			return 1 / (1 + ex);
-		}
-		
-		// First derivative of the sigmoid function
-		private double sigmoidPrime(double x){
-			double ex = Math.exp(-x);
-			return ex / (1 + 2*ex + ex*ex);
-		}
-		
-		private double tanh(double x){
-			return Math.tanh(x);
-		}
-		
-		// First derivative of the tanh function
-		private double tanhPrime(double x){
-			double tanh = Math.tanh(x);
-			return 1 - tanh*tanh;
-		}
-		
-		// Leaky version
-		private double reLU(double x){
-			return (x <= 0) ? 0.01 * x : x;
-		}
-		
-		// First derivative of the reLU function
-		private double reLUPrime(double x){
-			return (x <= 0) ? 0.01 : 1;
-		}
-	}
-	
 	private Node[][] layersNodesWeightsBias;
 	
-	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC activationFuncs[], WEIGHT_INIT_FUNC _weightInitFunc) {
+	public NeuralNetwork(int numNodesInLayers[], 
+						double _learningRate, 
+						double _momentumFactor, 
+						ACTIVATION_FUNC activationFuncs[], 
+						WEIGHT_INIT_FUNC _weightInitFunc) {
 		Init(numNodesInLayers, activationFuncs, _learningRate, _momentumFactor, _weightInitFunc);
     }
 	
-	public NeuralNetwork(int numNodesInLayers[], double _learningRate, double _momentumFactor, ACTIVATION_FUNC _activationFunc, WEIGHT_INIT_FUNC _weightInitFunc) {
+	public NeuralNetwork(int numNodesInLayers[], 
+						double _learningRate, 
+						double _momentumFactor, 
+						ACTIVATION_FUNC _activationFunc, 
+						WEIGHT_INIT_FUNC _weightInitFunc) {
 		ACTIVATION_FUNC activationFuncs[] = new ACTIVATION_FUNC[numNodesInLayers.length];
 		
 		for(int i = 0; i < activationFuncs.length; ++i)
@@ -193,12 +54,13 @@ public class NeuralNetwork {
 		Init(numNodesInLayers, activationFuncs, _learningRate, _momentumFactor, _weightInitFunc);
 	}
 	
+	public void SetProblemType(PROBLEM_TYPE _problemType){
+		problemType = _problemType;
+	}
+	
 	private void Init(int numNodesInLayers[], ACTIVATION_FUNC actFuncs[], double _learningRate, double _momentumFactor, WEIGHT_INIT_FUNC _weightInitFunc) {
-		learningRate = _learningRate;
-		momentumFactor = _momentumFactor;
-		
-		if(_weightInitFunc != null){
-			weightInitFunc = _weightInitFunc;
+		if(_weightInitFunc == null){
+			_weightInitFunc = WEIGHT_INIT_FUNC.RANDOM;
 		}
 		
 		layersNodesWeightsBias = new Node[numNodesInLayers.length][];
@@ -213,9 +75,21 @@ public class NeuralNetwork {
 			for(int k = 0; k < numNodesInLayers[i]; ++k)
 			{
 				if(i == 0){
-					layersNodesWeightsBias[i][k] = new Node(1, true, actFuncs[i]);
+					layersNodesWeightsBias[i][k] = new InputNode();
 				} else {
-					layersNodesWeightsBias[i][k] = new Node(numNodesInLayers[i - 1], false, actFuncs[i]);
+					switch (actFuncs[i]){
+					case SIGMOID:
+						layersNodesWeightsBias[i][k] = new SigmoidNode(numNodesInLayers[i - 1], _momentumFactor, _learningRate, _weightInitFunc);
+						break;
+					case RELU:
+						layersNodesWeightsBias[i][k] = new ReLUNode(numNodesInLayers[i - 1], _momentumFactor, _learningRate, _weightInitFunc);
+						break;
+					case TANH:
+						layersNodesWeightsBias[i][k] = new TanHNode(numNodesInLayers[i - 1], _momentumFactor, _learningRate, _weightInitFunc);
+						break;
+					default:
+						layersNodesWeightsBias[i][k] = new SigmoidNode(numNodesInLayers[i - 1], _momentumFactor, _learningRate, _weightInitFunc);
+					}
 				}
 			}
 		}
@@ -368,7 +242,7 @@ public class NeuralNetwork {
 		// Get the difference vector
 		for(int i = 0; i < idealOutputs.length; ++i){
 			// Quadratic Cost Function
-			gradientVector[i] = - ( actualOutputs[i] - idealOutputs[i] );
+			gradientVector[i] = idealOutputs[i] - actualOutputs[i];
 		}
 		
 		return gradientVector;
@@ -382,7 +256,7 @@ public class NeuralNetwork {
 		// Get the difference vector
 		for(int i = 0; i < idealOutputs.length; ++i){
 			// Cross Entropy Cost Function
-			gradientVector[i] = - ( actualOutputs[i] - idealOutputs[i] );
+			gradientVector[i] = actualOutputs[i] - idealOutputs[i];
 		}
 		
 		return gradientVector;
