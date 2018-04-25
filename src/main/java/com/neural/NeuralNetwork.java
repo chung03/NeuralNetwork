@@ -14,6 +14,7 @@ public class NeuralNetwork {
 		SIGMOID,
 		RELU,
 		TANH,
+		SOFTMAX,
 		NONE
 	};
 	
@@ -29,7 +30,7 @@ public class NeuralNetwork {
 	
 	private PROBLEM_TYPE problemType = PROBLEM_TYPE.REGRESSION;
 		
-	private Node[][] layersNodesWeightsBias;
+	private Layer[] layersNodesWeightsBias;
 	
 	public NeuralNetwork(int numNodesInLayers[], 
 						double _learningRate, 
@@ -58,39 +59,40 @@ public class NeuralNetwork {
 		problemType = _problemType;
 	}
 	
-	private void Init(int numNodesInLayers[], ACTIVATION_FUNC actFuncs[], double _learningRate, double _momentumFactor, WEIGHT_INIT_FUNC _weightInitFunc) {
+	private Layer CreateLayer(int inputNodes, int outputNodes, ACTIVATION_FUNC activationFunc, double _momentumFactor, double _learningRate, WEIGHT_INIT_FUNC _weightInitFunc){
+		switch (activationFunc){
+		case SOFTMAX:
+			return new SoftmaxLayer(inputNodes, outputNodes, _momentumFactor, _learningRate, _weightInitFunc);
+		case SIGMOID:
+			return new SigmoidLayer(inputNodes, outputNodes, _momentumFactor, _learningRate, _weightInitFunc);
+		case RELU:
+			return new ReLULayer(inputNodes, outputNodes, _momentumFactor, _learningRate, _weightInitFunc);
+		case TANH:
+			return new TanHLayer(inputNodes, outputNodes, _momentumFactor, _learningRate, _weightInitFunc);
+		case NONE:
+			return new InputLayer(inputNodes, outputNodes, _momentumFactor, _learningRate, _weightInitFunc);
+		}
+		
+		return null;
+	}
+	
+	private void Init(int numNodesInLayers[], ACTIVATION_FUNC actFuncs[], double _momentumFactor, double _learningRate, WEIGHT_INIT_FUNC _weightInitFunc) {
 		if(_weightInitFunc == null){
 			_weightInitFunc = WEIGHT_INIT_FUNC.RANDOM;
 		}
 		
-		layersNodesWeightsBias = new Node[numNodesInLayers.length][];
+		actFuncs[0] = ACTIVATION_FUNC.NONE;
+		
+		layersNodesWeightsBias = new Layer[numNodesInLayers.length];
 		
 		// Add correct number of nodes, and then add weights and bias
 		for(int i = 0; i < numNodesInLayers.length; ++i)
 		{
 			// Create correct number of nodes
-			layersNodesWeightsBias[i] = new Node[numNodesInLayers[i]];
-			
-			// Initialize each node
-			for(int k = 0; k < numNodesInLayers[i]; ++k)
-			{
-				if(i == 0){
-					layersNodesWeightsBias[i][k] = new InputNode();
-				} else {
-					switch (actFuncs[i]){
-					case SIGMOID:
-						layersNodesWeightsBias[i][k] = new SigmoidNode(numNodesInLayers[i - 1], _momentumFactor, _learningRate, _weightInitFunc);
-						break;
-					case RELU:
-						layersNodesWeightsBias[i][k] = new ReLUNode(numNodesInLayers[i - 1], _momentumFactor, _learningRate, _weightInitFunc);
-						break;
-					case TANH:
-						layersNodesWeightsBias[i][k] = new TanHNode(numNodesInLayers[i - 1], _momentumFactor, _learningRate, _weightInitFunc);
-						break;
-					default:
-						layersNodesWeightsBias[i][k] = new SigmoidNode(numNodesInLayers[i - 1], _momentumFactor, _learningRate, _weightInitFunc);
-					}
-				}
+			if(i == 0){
+				layersNodesWeightsBias[i] = CreateLayer(numNodesInLayers[i], numNodesInLayers[i], actFuncs[i], _momentumFactor, _learningRate, _weightInitFunc);
+			} else {
+				layersNodesWeightsBias[i] = CreateLayer(numNodesInLayers[i - 1], numNodesInLayers[i], actFuncs[i], _momentumFactor, _learningRate, _weightInitFunc);
 			}
 		}
 	}
@@ -105,144 +107,86 @@ public class NeuralNetwork {
 			++numOutputLayers;
 		}
 		
-		double outputs[][] = null;
-		outputs = new double[numOutputLayers][];
+		Matrix outputs[] = null;
+		outputs = new Matrix[numOutputLayers];
 		
-		// Get the outputs of the first derivative of the Sigmoid functions
-		double outputsPrime[][] = null;
-		outputsPrime = new double[layersNodesWeightsBias.length][];
+		// Get the outputs of the first derivative of the activation functions
+		Matrix outputsPrime[] = null;
+		outputsPrime = new Matrix[numOutputLayers];
+		
+		// The inputs become a row vector
+		double inputsTemp[][] = new double[1][];
+		inputsTemp[0] = inputs;
+		Matrix inputsVector = new Matrix(inputsTemp);
 		
 		//For each layer, multiply inputs by the weights + bias, then send outputs to next layer
 		for(int layerNum = 0; layerNum < layersNodesWeightsBias.length; ++layerNum){
-			Node[] layer = layersNodesWeightsBias[layerNum];
+			Layer layer = layersNodesWeightsBias[layerNum];
 			
-			outputs[layerNum] = new double[layer.length];
-			outputsPrime[layerNum] = new double[layer.length];
+			int layerLength = layer.GetLayerLength();
+			
+			outputs[layerNum] = new Matrix(layerLength, 1);
+			outputsPrime[layerNum] = new Matrix(layerLength, 1);
 			
 			// For each node, multiple inputs by weights then add bias
-			for(int nodeNum = 0; nodeNum < layer.length; ++nodeNum){
-				
+			if(layerNum == 0){
 				// If this is the input node, then match each input with a node
-				if(layerNum == 0){
-					double singleInput[] = new double[1];
-					singleInput[0] = inputs[nodeNum];
-					
-					outputs[layerNum][nodeNum] = layer[nodeNum].takeInput(singleInput);
-				} else {
-					outputs[layerNum][nodeNum] = layer[nodeNum].takeInput(outputs[layerNum - 1]);
-					outputsPrime[layerNum][nodeNum] = layer[nodeNum].takeInputPrime(outputs[layerNum - 1]);
-				}
+				outputs[layerNum] = layer.takeInput(inputsVector);
+			} else {
+				outputs[layerNum] = layer.takeInput(outputs[layerNum - 1]);
+				outputsPrime[layerNum] = layer.takeInputPrime(outputs[layerNum - 1]);
 			}
 		}
 		
 		int outputLayerIndex = layersNodesWeightsBias.length - 1;
-		
-		// Calculate output of the Softmax layer if this is a classification problem
-		if(problemType == PROBLEM_TYPE.CLASSIFICATION){
-			
-			double outputLayerSum = 0;
-			
-			// Get sum of outputs from second last layer
-			for(int i = 0; i < outputs[outputLayerIndex].length; ++i){
-				outputLayerSum += outputs[outputLayerIndex][i];
-			}
-			
-			// Calculate output of softmax layer
-			for(int i = 0; i < outputs[outputLayerIndex].length; ++i){
-				outputs[outputLayerIndex + 1][i] = outputs[outputLayerIndex][i]/outputLayerSum;
-			}
-			
-			++outputLayerIndex;
-		}
 		
 		if(trainingMode){
 			doTraining(outputs, idealOutputs, outputsPrime, layersNodesWeightsBias);
 		}
 		
-		return outputs[outputLayerIndex];
+		return outputs[outputLayerIndex].getArrayCopy()[0];
 	}
 	
-	private void doTraining(double[][] outputs, double[] idealOutputs, double[][] outputsPrime, Node[][] layersNodesWeightsBias){
+	private void doTraining(Matrix[] outputs, double[] idealOutputs, Matrix[] outputsPrime, Layer[] layers){
 		
-		int outputLayerIndex = layersNodesWeightsBias.length - 1;
+		int outputLayerIndex = layers.length - 1;
 		
-		Matrix[] layerErrors = new Matrix[layersNodesWeightsBias.length];
+		Matrix[] layerErrors = new Matrix[layers.length];
 		
 		// Calculate error vector of the output layer
-		double[] temp = gradientCostFuncMeanSquared(idealOutputs, outputs[outputLayerIndex]);
-		double[][] gradientVector = new double[1][];
-		gradientVector[0] = temp;
-		Matrix gradientVectorMaxtrix = new Matrix(gradientVector);
+		Matrix gradientVectorMaxtrix = gradientCostFuncMeanSquared(idealOutputs, outputs[outputLayerIndex]);
 		
 		// Printing the difference between the ideal outputs and the actual outputs
 		// gradientVectorMaxtrix.print( 2, 5);
 		
-		double[][] outputPrimeVector = new double[1][];
-		outputPrimeVector[0] = outputsPrime[outputLayerIndex];
-		Matrix outputVectorMatrix = new Matrix(outputPrimeVector);
-		
-		layerErrors[outputLayerIndex] = gradientVectorMaxtrix.arrayTimes(outputVectorMatrix).transpose();
+		layerErrors[outputLayerIndex] = gradientVectorMaxtrix.arrayTimes(outputsPrime[outputLayerIndex]).transpose();
 		
 		//Backpropogate the error
 		for(int i = outputLayerIndex - 1; i > 0; --i){
 			
 			// Get the weights matrix, do w * err
-			Matrix weightsMatrix = constructWeightsMatrix(layersNodesWeightsBias[i + 1]);
+			Matrix weightsMatrix = layers[i + 1].getWeightsMatrix();
 			Matrix applied = weightsMatrix.transpose().times(layerErrors[i + 1]);
 			
-			// Just get the outputs of the sigmoid primes from during the training
-			double[][] layerOutputVector = new double[1][];
-			layerOutputVector[0] = outputsPrime[i];
-			Matrix layerOutputVectorMatrix = new Matrix(layerOutputVector).transpose();
-			
-			// Finally get the error for the layer
-			layerErrors[i] = applied.arrayTimes(layerOutputVectorMatrix);
+			// Finally get the error for the layer using outputs primes from during the training
+			layerErrors[i] = applied.arrayTimes(outputsPrime[i].transpose());
 		}
 		
 		// Now use the error terms and the outputs to determine the how weights and bias should be changed
 		for(int i = outputLayerIndex; i > 0; --i){
-			
-			Matrix layerError = layerErrors[i];
-			
-			// Iterate over the nodes in a given layer
-			for(int k = 0; k < layersNodesWeightsBias[i].length; ++k){
-				Node node = layersNodesWeightsBias[i][k];
-				
-				Matrix weightDeltas = new Matrix(outputs[i - 1].length, 1);
-				
-				// Iterate over the outputs of the previous layer
-				for(int j = 0; j < outputs[i - 1].length; ++j){
-					double weightDelta = outputs[i - 1][j] * layerError.get(k, 0);
-					weightDeltas.set(j, 0, weightDelta);
-				}
-				
-				node.adjustWeights(weightDeltas);
-				node.adjustBias(layerError.get(k, 0));
-			}
+			layers[i].adjustWeightsAndBias(outputs[i - 1], layerErrors[i]);
 		}
-	}
-	
-	private Matrix constructWeightsMatrix(Node layer[]){
-		double[][] weights = new double[layer.length][];
-		
-		for(int i = 0; i < layer.length; ++i) {
-			weights[i] = layer[i].getWeights()[0];
-		}
-		
-		Matrix ret = new Matrix(weights);
-		
-		return ret;
 	}
 	
 	// Calculate gradient of cost with respect to output layer
-	private double[] gradientCostFuncMeanSquared(double idealOutputs[], double actualOutputs[]){
+	private Matrix gradientCostFuncMeanSquared(double[] idealOutputs, Matrix actualOutputs){
 		
-		double gradientVector[] = new double[idealOutputs.length];
+		Matrix gradientVector = new Matrix(1, idealOutputs.length);
 		
 		// Get the difference vector
 		for(int i = 0; i < idealOutputs.length; ++i){
 			// Quadratic Cost Function
-			gradientVector[i] = idealOutputs[i] - actualOutputs[i];
+			gradientVector.set(0, i, idealOutputs[i] - actualOutputs.get(0,i));
 		}
 		
 		return gradientVector;

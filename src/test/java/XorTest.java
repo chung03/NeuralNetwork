@@ -26,6 +26,22 @@ public class XorTest {
         System.out.println(outputs[0] + ", " + outputs[1]);
     }
     
+    @Test public void sanityTestOnlyInputs() {
+    	System.out.println("sanityTestOnlyInputs beginning");
+    	int numLayers[] = {2};
+        NeuralNetwork network = new NeuralNetwork(numLayers, 1, 0.1, NeuralNetwork.ACTIVATION_FUNC.NONE, null);
+        
+        double inputs[] = {1, 1};
+        
+        double outputs[] = network.goThroughNetwork(inputs, false, null);
+        
+        assertEquals(outputs.length, 2);
+        
+        System.out.println(outputs[0] + ", " + outputs[1]);
+        
+        assertTrue(outputs[0] == 1 && outputs[1] == 1);
+    }
+    
     @Test public void trainingSimpleXORReLU() {
     	System.out.println("trainingSimpleXORReLU beginning");
     	
@@ -99,7 +115,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        for(int i = 0; i < 30000; ++i){
+        for(int i = 0; i < 60000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -233,7 +249,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        for(int i = 0; i < 4000; ++i){
+        for(int i = 0; i < 10000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -267,7 +283,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        for(int i = 0; i < 4000; ++i){
+        for(int i = 0; i < 10000; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -332,13 +348,13 @@ public class XorTest {
     @Test public void trainingSanityLotsOfInputs() {
     	System.out.println("trainingSanityLotsOfInputs beginning");
     	
-    	int numLayers[] = {4096, 2048, 3};
+    	int numLayers[] = {200, 100, 3};
         NeuralNetwork network = new NeuralNetwork(numLayers, 1, 1, NeuralNetwork.ACTIVATION_FUNC.RELU, null);
         
         double inputs[][] = new double[1][];
-        inputs[0] = new double[4096];
+        inputs[0] = new double[200];
         
-        for(int i = 0; i < 4096; ++i){
+        for(int i = 0; i < 200; ++i){
         	inputs[0][i] = 1;
         }
         
@@ -370,4 +386,5 @@ public class XorTest {
 	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
     	}
     }
+    
 }

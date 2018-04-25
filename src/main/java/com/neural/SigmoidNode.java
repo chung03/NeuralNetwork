@@ -10,16 +10,19 @@ public class SigmoidNode extends Node {
 		super(numWeights, _momentumFactor, _learningRate, _weightInitFunc);
 	}
 	
-	public double takeInput(double inputs[]){
+	@Override
+	public double takeInput(Matrix inputs){
 		double ex = Math.exp(-(sumWeightsAndBias(inputs)));
 		return 1 / (1 + ex);
 	}
 	
-	public double takeInputPrime(double inputs[]){
+	@Override
+	public double takeInputPrime(Matrix inputs){
 		double ex = Math.exp(-(sumWeightsAndBias(inputs)));
 		return ex / (1 + 2*ex + ex*ex);
 	}
 	
+	@Override
 	public void randomizeWeightsXavier(int numWeights, Matrix weights, WEIGHT_INIT_FUNC _weightInitFunc){
 		for(int i = 0; i < numWeights; ++i){
 			double num = Math.random();

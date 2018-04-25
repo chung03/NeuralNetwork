@@ -51,21 +51,14 @@ public abstract class Node {
 		}
 	}
 	
-	protected double sumWeightsAndBias(double inputs[]){
-		// The inputs become a row vector
-		double inputsTemp[][] = new double[1][];
-		inputsTemp[0] = inputs;
-		
-		Matrix inputsVector = new Matrix(inputsTemp);
-		
-		Matrix output = inputsVector.times(weights);
-		
+	protected double sumWeightsAndBias(Matrix inputs){
+		Matrix output = inputs.times(weights);
 		return output.get(0, 0) + bias;
 	}
 	
 	public abstract void randomizeWeightsXavier(int numWeights, Matrix weights, WEIGHT_INIT_FUNC _weightInitFunc);
 	
-	public abstract double takeInput(double inputs[]);
+	public abstract double takeInput(Matrix inputs);
 	
-	public abstract double takeInputPrime(double inputs[]);
+	public abstract double takeInputPrime(Matrix inputs);
 }

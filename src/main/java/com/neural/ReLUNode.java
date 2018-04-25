@@ -11,15 +11,18 @@ public class ReLUNode extends Node {
 		super(numWeights, _momentumFactor, _learningRate, _weightInitFunc);
 	}
 	
-	public double takeInput(double inputs[]){
+	@Override
+	public double takeInput(Matrix inputs){
 		double x = sumWeightsAndBias(inputs);
 		return (x <= 0) ? 0.01 * x : x;
 	}
 	
-	public double takeInputPrime(double inputs[]){
+	@Override
+	public double takeInputPrime(Matrix inputs){
 		return (sumWeightsAndBias(inputs) <= 0) ? 0.01 : 1;
 	}
 	
+	@Override
 	public void randomizeWeightsXavier(int numWeights, Matrix weights, WEIGHT_INIT_FUNC _weightInitFunc){
 		for(int i = 0; i < numWeights; ++i){
 			double num = Math.random();

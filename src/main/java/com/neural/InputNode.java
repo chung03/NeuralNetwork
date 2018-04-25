@@ -9,14 +9,18 @@ public class InputNode extends Node{
 		super(0, 0, 0, null);
 	}
 	
-	public double takeInput(double inputs[]){
-		return inputs[0];
+	@Override
+	public double takeInput(Matrix inputs){
+		return inputs.get(0, 0);
 	}
 	
-	public double takeInputPrime(double inputs[]){
-		return inputs[0];
+	@Override
+	public double takeInputPrime(Matrix inputs){
+		return inputs.get(0, 0);
 	}
 	
-	// Do nothing
-	public void randomizeWeightsXavier(int numWeights, Matrix weights, WEIGHT_INIT_FUNC _weightInitFunc){}
+	@Override
+	public void randomizeWeightsXavier(int numWeights, Matrix weights, WEIGHT_INIT_FUNC _weightInitFunc){
+		// Do nothing
+	}
 }

@@ -10,15 +10,18 @@ public class TanHNode extends Node {
 		super(numWeights, _momentumFactor, _learningRate, _weightInitFunc);
 	}
 	
-	public double takeInput(double inputs[]){
+	@Override
+	public double takeInput(Matrix inputs){
 		return Math.tanh(sumWeightsAndBias(inputs));
 	}
 	
-	public double takeInputPrime(double inputs[]){		
+	@Override
+	public double takeInputPrime(Matrix inputs){		
 		double tanh = Math.tanh(sumWeightsAndBias(inputs));
 		return 1 - tanh*tanh;
 	}
 	
+	@Override
 	public void randomizeWeightsXavier(int numWeights, Matrix weights, WEIGHT_INIT_FUNC _weightInitFunc){
 		for(int i = 0; i < numWeights; ++i){
 			double num = Math.random();
