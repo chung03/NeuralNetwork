@@ -11,7 +11,57 @@ import static org.junit.Assert.*;
  * @author colin_000, @date 09/03/18 8:44 PM
  */
 public class XorTest {
+	
+	public NeuralNetwork doTest(int numLayers[], 
+								double inputs[][],
+								double idealOutputs[][],
+								NeuralNetwork.ACTIVATION_FUNC[] activationFuncs, 
+								NeuralNetwork.WEIGHT_INIT_FUNC weightFunc,
+								int numIterations){
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, activationFuncs, weightFunc);
+        doTestInner(network, inputs, idealOutputs, numIterations);
+        return network;
+	}
+	
+	public NeuralNetwork doTest(int numLayers[], 
+								double inputs[][],
+								double idealOutputs[][],
+								NeuralNetwork.ACTIVATION_FUNC activationFunc, 
+								NeuralNetwork.WEIGHT_INIT_FUNC weightFunc, 
+								int numIterations){
+        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, activationFunc, weightFunc);
+        doTestInner(network, inputs, idealOutputs, numIterations);
+        return network;
+	}
+	
+	public void doTestInner(NeuralNetwork network, double inputs[][], double idealOutputs[][], int numIterations){
+        for(int i = 0; i < numIterations; ++i){
+        	for(int k = 0; k < inputs.length; ++k){
+        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
+    	        
+    	        assertEquals(outputs.length, idealOutputs[k].length);
+    	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+    	        
+    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
+        	}
+        }
+	}
+	
+	public void CheckNetwork(NeuralNetwork network, double inputs[][], double idealOutputs[][]){
+		for(int k = 0; k < inputs.length; ++k){
+    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
+	        
+	        assertEquals(outputs.length, idealOutputs[k].length);
+	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
+	        
+	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
+	        
+	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
+    	}
+	}
+	
     @Test public void sanityTest() {
+    	System.out.println("sanityTest beginning");
     	int numLayers[] = {2, 3, 2};
         NeuralNetwork network = new NeuralNetwork(numLayers, 1, 0.1, NeuralNetwork.ACTIVATION_FUNC.RELU, null);
         
@@ -40,309 +90,6 @@ public class XorTest {
         System.out.println(outputs[0] + ", " + outputs[1]);
         
         assertTrue(outputs[0] == 1 && outputs[1] == 1);
-    }
-    
-    @Test public void trainingSimpleXORReLU() {
-    	System.out.println("trainingSimpleXORReLU beginning");
-    	
-    	int numLayers[] = {2, 3, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.RELU, null);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
-        
-        for(int i = 0; i < 50000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-    	}
-    }
-    
-    @Test public void trainingSimpleXORSigmoid() {
-    	System.out.println("trainingSimpleXORSigmoid beginning");
-    	
-    	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.SIGMOID, null);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
-        
-        for(int i = 0; i < 40000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-    	}
-    }
-    
-    @Test public void trainingSimpleNANDReLU() {
-    	System.out.println("trainingSimpleNANDReLU beginning");
-    	
-    	int numLayers[] = {2, 3, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.RELU, null);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
-        
-        for(int i = 0; i < 60000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-	        
-	        
-    	}
-    }
-    
-    @Test public void trainingSimpleXORTanhXavier() {
-    	System.out.println("trainingSimpleXORTanhXavier beginning");
-    	
-    	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
-        
-        for(int i = 0; i < 100000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        assertTrue(outputs[0] >= -1 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        assertTrue(outputs[0] >= -1 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-    	}
-    }
-    
-    @Test public void trainingSimpleNANDTanh() {
-    	System.out.println("trainingSimpleNANDTanh beginning");
-    	
-    	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.TANH, null);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
-        
-        for(int i = 0; i < 40000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        assertTrue(outputs[0] >= -1 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        assertTrue(outputs[0] >= -1 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-	        
-	        
-    	}
-    }
-    
-    @Test public void trainingSimpleNANDTanhXavier() {
-    	System.out.println("trainingSimpleNANDTanhXavier beginning");
-    	
-    	int numLayers[] = {2, 2, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
-        
-        for(int i = 0; i < 5000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        assertTrue(outputs[0] >= -1 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        assertTrue(outputs[0] >= -1 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-	        
-	        
-    	}
-    }
-    
-    @Test public void trainingSimpleNANDReLUXavier() {
-    	System.out.println("trainingSimpleNANDReLUXavier beginning");
-    	
-    	int numLayers[] = {2, 3, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
-        
-        for(int i = 0; i < 10000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-	        
-	        
-    	}
-    }
-    
-    @Test public void trainingSimpleXORReLUXavier() {
-    	System.out.println("trainingSimpleXORReLUXavier beginning");
-    	
-    	int numLayers[] = {2, 3, 1};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
-        
-        for(int i = 0; i < 10000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        //assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-    	}
-    }
-    
-    @Test public void trainingSimpleNANDReLUSigmoidMix() {
-    	System.out.println("trainingSimpleNANDReLUSigmoidMix beginning");
-    	
-    	int numLayers[] = {2, 2, 1};
-    	NeuralNetwork.ACTIVATION_FUNC activationFuncs[] = {
-    			NeuralNetwork.ACTIVATION_FUNC.NONE,
-    			NeuralNetwork.ACTIVATION_FUNC.RELU,
-    			NeuralNetwork.ACTIVATION_FUNC.SIGMOID
-    			};
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.9, activationFuncs, null);
-        
-        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
-        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
-        
-        for(int i = 0; i < 20000; ++i){
-        	for(int k = 0; k < inputs.length; ++k){
-        		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
-    	        
-    	        assertEquals(outputs.length, 1);
-    	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-    	        
-    	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
-        	}
-        }
-        
-        for(int k = 0; k < inputs.length; ++k){
-    		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
-	        
-	        assertEquals(outputs.length, 1);
-	        assertTrue(outputs[0] >= 0 && outputs[0] <= 1);
-	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
-	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
-	        
-	        
-    	}
     }
     
     @Test public void trainingSanityLotsOfInputs() {
@@ -387,4 +134,115 @@ public class XorTest {
     	}
     }
     
+    @Test public void trainingSimpleXORReLU() {
+    	System.out.println("trainingSimpleXORReLU beginning");
+    	int numLayers[] = {2, 3, 1};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
+        
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, null, 100000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
+    
+    @Test public void trainingSimpleXORSigmoid() {
+    	System.out.println("trainingSimpleXORSigmoid beginning");
+    	int numLayers[] = {2, 2, 1};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
+
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.SIGMOID, null, 10000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
+    
+    @Test public void trainingSimpleNANDReLU() {
+    	System.out.println("trainingSimpleNANDReLU beginning");
+    	
+    	int numLayers[] = {2, 3, 1};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, null, 90000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
+    
+    @Test public void trainingSimpleNANDTanh() {
+    	System.out.println("trainingSimpleNANDTanh beginning");
+    	
+    	int numLayers[] = {2, 2, 1};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, null, 40000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
+    
+    @Test public void trainingSimpleNANDReLUSigmoidMix() {
+    	System.out.println("trainingSimpleNANDReLUSigmoidMix beginning");
+    	
+    	int numLayers[] = {2, 2, 1};
+    	NeuralNetwork.ACTIVATION_FUNC activationFuncs[] = {
+    			NeuralNetwork.ACTIVATION_FUNC.NONE,
+    			NeuralNetwork.ACTIVATION_FUNC.RELU,
+    			NeuralNetwork.ACTIVATION_FUNC.SIGMOID
+    			};
+        
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, activationFuncs, null, 20000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
+    
+    @Test public void trainingSimpleXORTanhXavier() {
+    	System.out.println("trainingSimpleXORTanhXavier beginning");
+    	
+    	int numLayers[] = {2, 2, 1};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
+        
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 50000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
+    
+    @Test public void trainingSimpleNANDTanhXavier() {
+    	System.out.println("trainingSimpleNANDTanhXavier beginning");
+    	
+    	int numLayers[] = {2, 2, 1};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 5000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
+    
+    @Test public void trainingSimpleNANDReLUXavier() {
+    	System.out.println("trainingSimpleNANDReLUXavier beginning");
+    	
+    	int numLayers[] = {2, 3, 1};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {1}};
+        
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 20000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
+    
+    @Test public void trainingSimpleXORReLUXavier() {
+    	System.out.println("trainingSimpleXORReLUXavier beginning");
+    	
+    	int numLayers[] = {2, 3, 1};
+        double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
+        double idealOutputs[][] = {{0}, {1}, {1}, {0}};
+        
+        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 50000);
+        
+        CheckNetwork(network, inputs, idealOutputs);
+    }
 }
