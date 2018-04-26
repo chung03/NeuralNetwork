@@ -102,11 +102,6 @@ public class NeuralNetwork {
 	{
 		int numOutputLayers = layersNodesWeightsBias.length;
 		
-		// Add a Softmax layer if this is a classification problem
-		if(problemType == PROBLEM_TYPE.CLASSIFICATION){
-			++numOutputLayers;
-		}
-		
 		Matrix outputs[] = null;
 		outputs = new Matrix[numOutputLayers];
 		
