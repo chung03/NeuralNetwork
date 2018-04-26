@@ -2,6 +2,8 @@ import org.junit.Test;
 
 import com.neural.NeuralNetwork;
 
+import junit.framework.AssertionFailedError;
+
 import static org.junit.Assert.*;
 
 /*
@@ -12,30 +14,49 @@ import static org.junit.Assert.*;
  */
 public class XorTest {
 	
-	public NeuralNetwork doTest(int numLayers[], 
+	public void doTest(int numLayers[], 
 								double inputs[][],
 								double idealOutputs[][],
 								NeuralNetwork.ACTIVATION_FUNC[] activationFuncs, 
 								NeuralNetwork.WEIGHT_INIT_FUNC weightFunc,
-								int numIterations){
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, activationFuncs, weightFunc);
-        doTestInner(network, inputs, idealOutputs, numIterations);
-        return network;
+								int numIterations){        
+        for(int numAttempts = 0; numAttempts < 5; ++numAttempts){
+        	NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, activationFuncs, weightFunc);
+	        doTestInner(network, inputs, idealOutputs, numIterations);
+	        
+	        if(CheckNetworkPassed(network, inputs, idealOutputs)){
+	        	return;
+	        } else {
+	        	System.out.println("Network did not converge on correct solution. Assuming it fell into a local minimum instead of global minimum");
+	        }
+		}
+		
+		fail("Neural network did not converge on the correct solution after 5 attempts. Test failed");
 	}
 	
-	public NeuralNetwork doTest(int numLayers[], 
+	public void doTest(int numLayers[], 
 								double inputs[][],
 								double idealOutputs[][],
 								NeuralNetwork.ACTIVATION_FUNC activationFunc, 
 								NeuralNetwork.WEIGHT_INIT_FUNC weightFunc, 
 								int numIterations){
-        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, activationFunc, weightFunc);
-        doTestInner(network, inputs, idealOutputs, numIterations);
-        return network;
+		
+		for(int numAttempts = 0; numAttempts < 5; ++numAttempts){
+	        NeuralNetwork network = new NeuralNetwork(numLayers, 0.1, 0.5, activationFunc, weightFunc);
+	        doTestInner(network, inputs, idealOutputs, numIterations);
+	        
+	        if(CheckNetworkPassed(network, inputs, idealOutputs)){
+	        	return;
+	        } else {
+	        	System.out.println("Network did not converge on correct solution. Assuming it fell into a local minimum instead of global minimum");
+	        }
+		}
+		
+		fail("Neural network did not converge on the correct solution after 5 attempts. Test failed");
 	}
 	
-	public void doTestInner(NeuralNetwork network, double inputs[][], double idealOutputs[][], int numIterations){
-        for(int i = 0; i < numIterations; ++i){
+	public NeuralNetwork doTestInner(NeuralNetwork network, double inputs[][], double idealOutputs[][], int numIterations){
+		for(int i = 0; i < numIterations; ++i){
         	for(int k = 0; k < inputs.length; ++k){
         		double outputs[] = network.goThroughNetwork(inputs[k], true, idealOutputs[k]);
     	        
@@ -45,9 +66,11 @@ public class XorTest {
     	        // System.out.println("Round " + (k + 1) + " of set " + (i + 1) + ": " + outputs[0]);
         	}
         }
+		
+		return network;
 	}
 	
-	public void CheckNetwork(NeuralNetwork network, double inputs[][], double idealOutputs[][]){
+	public boolean CheckNetworkPassed(NeuralNetwork network, double inputs[][], double idealOutputs[][]){
 		for(int k = 0; k < inputs.length; ++k){
     		double outputs[] = network.goThroughNetwork(inputs[k], false, null);
 	        
@@ -56,8 +79,12 @@ public class XorTest {
 	        
 	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
 	        
-	        assertTrue(Math.abs(outputs[0] - idealOutputs[k][0]) < 0.1);
+	        if(Math.abs(outputs[0] - idealOutputs[k][0]) >= 0.1){
+	        	return false;
+	        }
     	}
+		
+		return true;
 	}
 	
     @Test public void sanityTest() {
@@ -140,9 +167,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, null, 100000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, null, 150000);
     }
     
     @Test public void trainingSimpleXORSigmoid() {
@@ -151,9 +176,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
 
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.SIGMOID, null, 10000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.SIGMOID, null, 10000);
     }
     
     @Test public void trainingSimpleNANDReLU() {
@@ -163,9 +186,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, null, 90000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, null, 90000);
     }
     
     @Test public void trainingSimpleNANDTanh() {
@@ -175,9 +196,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, null, 40000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, null, 40000);
     }
     
     @Test public void trainingSimpleNANDReLUSigmoidMix() {
@@ -193,9 +212,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, activationFuncs, null, 20000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, activationFuncs, null, 20000);
     }
     
     @Test public void trainingSimpleXORTanhXavier() {
@@ -205,9 +222,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 50000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 50000);
     }
     
     @Test public void trainingSimpleNANDTanhXavier() {
@@ -217,9 +232,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 5000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.TANH, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 5000);
     }
     
     @Test public void trainingSimpleNANDReLUXavier() {
@@ -229,9 +242,7 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {1}};
         
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 20000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 20000);
     }
     
     @Test public void trainingSimpleXORReLUXavier() {
@@ -241,8 +252,6 @@ public class XorTest {
         double inputs[][] = {{1, 1}, {0, 1}, {1, 0}, {0, 0}};
         double idealOutputs[][] = {{0}, {1}, {1}, {0}};
         
-        NeuralNetwork network = doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 50000);
-        
-        CheckNetwork(network, inputs, idealOutputs);
+        doTest(numLayers, inputs, idealOutputs, NeuralNetwork.ACTIVATION_FUNC.RELU, NeuralNetwork.WEIGHT_INIT_FUNC.XAVIER_MODIFIED, 50000);
     }
 }
