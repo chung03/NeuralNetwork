@@ -73,10 +73,18 @@ public class SoftmaxTest {
 	        
 	        assertEquals(outputs.length, idealOutputs[k].length);
 	        
-	        System.out.println("Round " + (k + 1) + ": " + outputs[0]);
+	        System.out.print("Round " + (k + 1) + ": ");
 	        
-	        if(Math.abs(outputs[0] - idealOutputs[k][0]) >= 0.1){
-	        	return false;
+	        for(int j = 0; j < outputs.length; ++j){
+	        	System.out.print(", " + outputs[j]);
+	        }
+	        
+	        System.out.println("");
+	        
+	        for(int j = 0; j < outputs.length; ++j){
+	        	if(Math.abs(outputs[j] - idealOutputs[k][j]) >= 0.1){
+		        	return false;
+		        }
 	        }
     	}
 		
@@ -128,4 +136,63 @@ public class SoftmaxTest {
         
         assertTrue(Math.abs((outputs[0] + outputs[1] + outputs[2]) - 1) <= 0.01);
     }
+    
+    @Test public void trainingSimpleSoftmaxClassification() {
+    	System.out.println("trainingSimpleSoftmaxClassification beginning");
+    	int numLayers[] = {3, 3, 3};
+        double inputs[][] = {{1, 0, 1}, {0, 0, 0}, {0, 1, 0}};
+        double idealOutputs[][] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+        
+        NeuralNetwork.ACTIVATION_FUNC actFuncs[] = {
+    			NeuralNetwork.ACTIVATION_FUNC.NONE,
+    			NeuralNetwork.ACTIVATION_FUNC.RELU,
+    			NeuralNetwork.ACTIVATION_FUNC.SOFTMAX
+    	};
+        
+        doTest(numLayers, inputs, idealOutputs, actFuncs, null, 10000);
+    }
+    
+    /*
+    @Test public void trainingSimpleSoftmaxClassificationMoreInputs() {
+    	System.out.println("trainingSimpleSoftmaxClassificationMoreInputs beginning");
+    	int numLayers[] = {200, 100, 3, 3};
+    	
+    	// Set up ideal inputs
+    	double inputs[][] = new double[20][];
+    	for(int i = 0; i < inputs.length; ++i){
+    		inputs[i] = new double[200];
+    		
+    		for(int j = 0; j < 200; ++j){
+    			inputs[i][j] = 1;
+    		}
+    	}
+    	 // Set up ideal outputs
+    	double idealOutputs[][] = new double[20][];
+    	for(int i = 0; i < inputs.length; ++i){
+    		idealOutputs[i] = new double[3];
+    		
+    		for(int j = 0; j < 3; ++j){
+    			idealOutputs[i][j] = 0;
+    		}
+    		
+			if(i <= 66){
+				idealOutputs[i][0] = 1;
+			} else if(i <= 133){
+				idealOutputs[i][1] = 1;
+			} else {
+				idealOutputs[i][2] = 1;
+			}
+    	}
+    	
+        
+        NeuralNetwork.ACTIVATION_FUNC actFuncs[] = {
+    			NeuralNetwork.ACTIVATION_FUNC.NONE,
+    			NeuralNetwork.ACTIVATION_FUNC.RELU,
+    			NeuralNetwork.ACTIVATION_FUNC.RELU,
+    			NeuralNetwork.ACTIVATION_FUNC.SOFTMAX
+    	};
+        
+        doTest(numLayers, inputs, idealOutputs, actFuncs, null, 10000);
+    }
+    */
 }

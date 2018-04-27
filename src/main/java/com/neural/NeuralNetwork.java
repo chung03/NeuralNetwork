@@ -81,6 +81,10 @@ public class NeuralNetwork {
 			_weightInitFunc = WEIGHT_INIT_FUNC.RANDOM;
 		}
 		
+		if(actFuncs[actFuncs.length - 1] == ACTIVATION_FUNC.SOFTMAX){
+			problemType = PROBLEM_TYPE.CLASSIFICATION;
+		}
+		
 		actFuncs[0] = ACTIVATION_FUNC.NONE;
 		
 		layersNodesWeightsBias = new Layer[numNodesInLayers.length];
@@ -148,16 +152,20 @@ public class NeuralNetwork {
 		
 		Matrix[] layerErrors = new Matrix[layers.length];
 		
-		// Calculate error vector of the output layer
-		Matrix gradientVectorMaxtrix = gradientCostFuncMeanSquared(idealOutputs, outputs[outputLayerIndex]);
-		
-		// Printing the difference between the ideal outputs and the actual outputs
-		// gradientVectorMaxtrix.print( 2, 5);
-		
-		layerErrors[outputLayerIndex] = gradientVectorMaxtrix.arrayTimes(outputsPrime[outputLayerIndex]).transpose();
+		if(problemType == PROBLEM_TYPE.REGRESSION){
+			// Calculate error vector of the output layer
+			Matrix gradientVectorMaxtrix = gradientCostFuncMeanSquared(idealOutputs, outputs[outputLayerIndex]);
+			
+			// Printing the difference between the ideal outputs and the actual outputs
+			// gradientVectorMaxtrix.print( 2, 5);
+
+			layerErrors[outputLayerIndex] = (gradientVectorMaxtrix.arrayTimes(outputsPrime[outputLayerIndex])).transpose();
+		} else {
+			layerErrors[outputLayerIndex] = gradientCostFuncMeanSquared(idealOutputs, outputs[outputLayerIndex]).transpose();
+		}
 		
 		//Backpropogate the error
-		for(int i = outputLayerIndex - 1; i > 0; --i){
+		for(int i = outputLayerIndex - 1; i > 0; --i) {
 			
 			// Get the weights matrix, do w * err
 			Matrix weightsMatrix = layers[i + 1].getWeightsMatrix();
@@ -168,7 +176,7 @@ public class NeuralNetwork {
 		}
 		
 		// Now use the error terms and the outputs to determine the how weights and bias should be changed
-		for(int i = outputLayerIndex; i > 0; --i){
+		for(int i = outputLayerIndex; i > 0; --i) {
 			layers[i].adjustWeightsAndBias(outputs[i - 1], layerErrors[i]);
 		}
 	}
@@ -182,20 +190,6 @@ public class NeuralNetwork {
 		for(int i = 0; i < idealOutputs.length; ++i){
 			// Quadratic Cost Function
 			gradientVector.set(0, i, idealOutputs[i] - actualOutputs.get(0,i));
-		}
-		
-		return gradientVector;
-	}
-	
-	// Calculate gradient of cost with respect to output layer
-	private double[] gradientCostFuncCrossEntropy(double idealOutputs[], double actualOutputs[]){
-		
-		double gradientVector[] = new double[idealOutputs.length];
-		
-		// Get the difference vector
-		for(int i = 0; i < idealOutputs.length; ++i){
-			// Cross Entropy Cost Function
-			gradientVector[i] = actualOutputs[i] - idealOutputs[i];
 		}
 		
 		return gradientVector;
